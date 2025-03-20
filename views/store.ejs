@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
+    <%- include('header') %>
     <div class="container">
         <% if (store.image) { %>
             <img class="banner" src="data:image/jpeg;base64,<%= store.image.toString('base64') %>" alt="Store Image">
@@ -24,8 +25,38 @@
                 </li>
             <% }); %>
         </ul>
-        <a href="/" class="btn">Back to Stores</a>
+        <div class="row">
+            <h3>Add a Review</h3>
+            <div class="add-review-form">
+                <form action="/add-review" method="POST" class="col s12" enctype="multipart/form-data">
+                    <div class="input-field col s6">
+                        <input type="text" id="reviewer_name" name="reviewer_name" required>
+                        <label for="reviewer_name">Name</label>
+                    </div>
+                    <div class="input-field col s6">
+                        <input type="text" id="comment" name="comment" required>
+                        <label for="comment">Review Text</label>
+                    </div>
+                    <div class="input-field col s6">
+                        <input type="number" id="rating" name="rating" min="1" max="5" required>
+                        <label for="rating">Rating (1-5)</label>
+                    </div>
+                    <div class="input-field col s6">
+                        <input type="file" id="image" name="image" accept="image/*" required>
+                    </div>
+                    <input type="hidden" name="storeId" value="<%= store.id %>"> 
+                    <button type="submit" class="btn">Add Review</button>
+                </form>
+            </div>
+        </div>
+
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script>
+        document.getElementById('fab').onclick = function() {
+            const form = document.querySelector('.add-store-form');
+            form.style.display = form.style.display === 'block' ? 'none' : 'block';
+        };
+    </script>
 </body>
 </html>

@@ -79,6 +79,20 @@ app.post('/add-store', upload.single('image'), (req, res) => {
   });
 });
 
+app.post('/add-review', (req, res) => {
+  const { storeId, rating, comment, reviewerName } = req.body;
+
+  const query = 'INSERT INTO reviews(store_id, rating, comment, reviewer_name) VALUES($1, $2, $3, $4, $5)';
+  const values = [storeId, rating, comment, reviewerName];
+
+  db.query(query, values, (err) => {
+      if (err) {
+          return res.status(500).send('Error inserting review');
+      }
+      res.redirect('/store/' + storeId); // Redirect to the store page after successful addition
+  });
+});
+
 app.listen(PORT, () => {
   console.log("Server running on http://localhost:", PORT);
 });
