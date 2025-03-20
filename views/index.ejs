@@ -1,71 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vapor Store Locator</title>
-    <link rel="stylesheet" href="/public/styles.css" />
-    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY"></script>
-    
-  </head>
-  <body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vape Store Locator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        .add-store-form {
+            display: none; 
+        }
+    </style>
+</head>
+<body>
+    <%- include('header') %>
+
     <div class="container">
-      <h1>Vapor Store Locator</h1>
-      <div class="container">
-        <h1>Add New Store</h1>
-        <form action="/add-store" method="POST">
-          <label for="name">Store Name:</label>
-          <input type="text" id="name" name="name" required />
-
-          <label for="address">Address:</label>
-          <input type="text" id="address" name="address" required />
-
-          <label for="latitude">Latitude:</label>
-          <input
-            type="number"
-            step="0.000001"
-            id="latitude"
-            name="latitude"
-            required
-          />
-
-          <label for="longitude">Longitude:</label>
-          <input
-            type="number"
-            step="0.000001"
-            id="longitude"
-            name="longitude"
-            required
-          />
-
-          <label for="rating">Rating:</label>
-          <input
-            type="number"
-            step="0.1"
-            min="0"
-            max="5"
-            id="rating"
-            name="rating"
-            required
-          />
-
-          <label for="contact_info">Contact Info:</label>
-          <input type="text" id="contact_info" name="contact_info" required />
-
-          <button type="submit">Add Store</button>
-        </form>
-      </div>
-      <ul class="store-list">
-        <% stores.forEach(store => { %>
-        <li>
-          <strong><a href="/store"><%= store.name %></a></strong> - <%=
-          store.address %> (Rating: <%= store.rating %>)
-        </li>
-        <% }); %>
-      </ul>
-      <div id="map" style="height: 400px;"></div>
+        <h1 class="center-align">Vape Store Locator</h1>
+        
+        <div class="row">
+            <button class="add-button" role="button" id="fab">Add </button>
+            <div class="add-store-form">
+                <form action="/add-store" method="POST" class="col s12">
+                    <div class="input-field col s6">
+                        <input type="text" id="name" name="name" required>
+                        <label for="name">Store Name</label>
+                    </div>
+                    <div class="input-field col s6">
+                        <input type="text" id="address" name="address" required>
+                        <label for="address">Address</label>
+                    </div>
+                    <div class="input-field col s6">
+                        <input type="text" id="contact_info" name="contact_info" required>
+                        <label for="contact_info">Contact Info</label>
+                    </div>
+                    <button type="submit" class="btn">Add Store</button>
+                </form>
+            </div>
+        </div>
+        
+        <ul class="collection">
+            <% stores.forEach(store => { %>
+                <li class="collection-item">
+                    <strong><a href="/store/<%= store.id %>"><%= store.name %></a></strong><p style="margin: 8px;"><%= store.address %> </p>
+                </li>
+            <% }); %>
+        </ul>
     </div>
-  </body>
 
+    <%- include('footer') %>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script>
+        document.getElementById('fab').onclick = function() {
+            const form = document.querySelector('.add-store-form');
+            form.style.display = form.style.display === 'block' ? 'none' : 'block';
+        };
+    </script>
+</body>
 </html>
-

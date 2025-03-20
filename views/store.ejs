@@ -4,29 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= store.name %></title>
-    <link rel="stylesheet" href="/public/styles.css">
-    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link rel="stylesheet" href="/styles.css">
 </head>
-<body onload="initMap()">
+<body>
     <div class="container">
-        <h1><%= store.name %></h1>
-        <p>Address: <%= store.address %></p>
-        <p>Rating: <%= store.rating %></p>
-        <div id="map" style="height: 400px;"></div>
+        <h1 class="center-align"><%= store.name %></h1>
+        <p><strong>Address:</strong> <%= store.address %></p>
+        <h2>Reviews</h2>
+        <ul class="collection">
+            <% reviews.forEach(review => { %>
+                <li class="collection-item">
+                  <h3> <%= review.reviewer_name %></h3>
+                    <p>Rating: <%= review.rating %></p>
+                    <p><%= review.comment %></p>
+                </li>
+            <% }); %>
+        </ul>
+        <a href="/" class="btn">Back to Stores</a>
     </div>
-    <script>
-        function initMap() {
-            const storeLocation = { lat: parseFloat("<%= store.latitude %>"), lng: parseFloat("<%= store.longitude %>") };
-            const map = new google.maps.Map(document.getElementById("map"), {
-                zoom: 13,
-                center: storeLocation,
-            });
-            const marker = new google.maps.Marker({
-                position: storeLocation,
-                map: map,
-                title: "<%= store.name %>",
-            });
-        }
-    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 </body>
 </html>
