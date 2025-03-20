@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= store.name %></title>
+    <link rel="stylesheet" href="/public/styles.css">
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY"></script>
+</head>
+<body onload="initMap()">
+    <div class="container">
+        <h1><%= store.name %></h1>
+        <p>Address: <%= store.address %></p>
+        <p>Rating: <%= store.rating %></p>
+        <div id="map" style="height: 400px;"></div>
+    </div>
+    <script>
+        function initMap() {
+            const storeLocation = { lat: parseFloat("<%= store.latitude %>"), lng: parseFloat("<%= store.longitude %>") };
+            const map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 13,
+                center: storeLocation,
+            });
+            const marker = new google.maps.Marker({
+                position: storeLocation,
+                map: map,
+                title: "<%= store.name %>",
+            });
+        }
+    </script>
+</body>
+</html>
