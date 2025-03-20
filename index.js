@@ -1,6 +1,8 @@
 import express from "express";
 import pg from "pg";
+import multer from "multer"
 
+const upload = multer();
 const app = express();
 const PORT = process.env.PORT || 3009;
 
@@ -29,7 +31,7 @@ app.get("/", async (req, res) => {
   }
 });
 
-app.get("/api/stores", async (req, res) => {
+app.get("/stores", async (req, res) => {
   try {
     const result = await db.query("SELECT * FROM stores");
     res.json(result.rows);
@@ -62,17 +64,19 @@ app.get("/store/:id", async (req, res) => {
   }
 });
 
-app.post("/add-store", async (req, res) => {
-  const { name, address, rating, contact_info } = req.body;
-  try {
-    await db.query(
-      "INSERT INTO stores (name, address, contact_info) VALUES ($1, $2, $3)",
-      [name, address, rating, contact_info]
-    );
-    res.redirect("/");
-  } catch (err) {
-    res.status(500).send(err.message);
-  }
+app.post('/add-store', upload.single('image'), (req, res) => {
+  const { name, address, contact_info } = req.body;
+  const image = req.file.buffer; // Get the image buffer
+
+  const query = 'INSERT INTO stores(name, address, contact_info, image) VALUES($1, $2, $3, $4)';
+  const values = [name, address, contact_info, image];
+
+  db.query(query, values, (err) => {
+      if (err) {
+          return res.status(500).send('Error inserting data');
+      }
+      res.redirect('/'); // Redirect after successful addition
+  });
 });
 
 app.listen(PORT, () => {

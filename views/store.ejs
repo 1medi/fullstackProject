@@ -9,6 +9,9 @@
 </head>
 <body>
     <div class="container">
+        <% if (store.image) { %>
+            <img class="banner" src="data:image/jpeg;base64,<%= store.image.toString('base64') %>" alt="Store Image">
+        <% } %>
         <h1 class="center-align"><%= store.name %></h1>
         <p><strong>Address:</strong> <%= store.address %></p>
         <h2>Reviews</h2>
