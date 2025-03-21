@@ -9,12 +9,13 @@ const PORT = process.env.PORT || 3009;
 
 // Database connection
 const db = new pg.Client({
-  user: "postgres",
-  host: "localhost",
-  database: "vaporstores",
-  password: "12345",
-  port: 5432,
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PASSWORD,
+  port: process.env.DB_PORT,
 });
+
 
 db.connect();
 app.use(express.json());
