@@ -1,6 +1,7 @@
 import express from "express";
 import pg from "pg";
-import multer from "multer"
+import multer from "multer";
+import axios from "axios";  // Added for geocoding
 
 const upload = multer();
 const app = express();
@@ -11,7 +12,7 @@ const db = new pg.Client({
   user: "postgres",
   host: "localhost",
   database: "vaporstores",
-  password: "1625",
+  password: "12345",
   port: 5432,
 });
 
@@ -25,11 +26,35 @@ app.use(express.static('public'));
 app.get("/", async (req, res) => {
   try {
     const result = await db.query("SELECT * FROM stores");
-    res.render("index", { stores: result.rows });
+    const stores = result.rows;
+
+    // Geocode the addresses to get latitude and longitude for each store
+    const geocodePromises = stores.map(async (store) => {
+      const address = store.address;
+      const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=AIzaSyDcMs8Q8YSQQssB6s_kU_5ygLubCAKoAR0`;
+
+      try {
+        const geocodeResponse = await axios.get(geocodeUrl);
+        const location = geocodeResponse.data.results[0]?.geometry?.location;
+
+        if (location) {
+          store.latitude = location.lat;
+          store.longitude = location.lng;
+        }
+      } catch (geocodeError) {
+        console.error('Geocoding error:', geocodeError);
+      }
+    });
+
+    // Wait for all geocode requests to finish
+    await Promise.all(geocodePromises);
+
+    res.render("index", { stores });
   } catch (err) {
     res.status(500).send(err.message);
   }
 });
+
 
 app.get("/stores", async (req, res) => {
   try {
@@ -64,25 +89,40 @@ app.get("/store/:id", async (req, res) => {
   }
 });
 
-app.post('/add-store', upload.single('image'), (req, res) => {
+// Add a store with geocoding to get latitude and longitude
+app.post('/add-store', upload.single('image'), async (req, res) => {
   const { name, address, contact_info } = req.body;
   const image = req.file.buffer; // Get the image buffer
 
-  const query = 'INSERT INTO stores(name, address, contact_info, image) VALUES($1, $2, $3, $4)';
-  const values = [name, address, contact_info, image];
+  // Geocoding API request to get latitude and longitude from address
+  const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=AIzaSyDcMs8Q8YSQQssB6s_kU_5ygLubCAKoAR0`;
 
-  db.query(query, values, (err) => {
-      if (err) {
-          return res.status(500).send('Error inserting data');
-      }
-      res.redirect('/'); // Redirect after successful addition
-  });
+  try {
+    const geocodeResponse = await axios.get(geocodeUrl);
+    const location = geocodeResponse.data.results[0]?.geometry?.location;
+
+    if (!location) {
+      return res.status(400).send('Unable to find coordinates for the provided address.');
+    }
+
+    const latitude = location.lat;
+    const longitude = location.lng;
+
+    // Insert the store along with latitude and longitude into the database
+    const query = 'INSERT INTO stores(name, address, contact_info, image, latitude, longitude) VALUES($1, $2, $3, $4, $5, $6)';
+    const values = [name, address, contact_info, image, latitude, longitude];
+
+    await db.query(query, values);
+    res.redirect('/'); // Redirect after successful addition
+  } catch (err) {
+    res.status(500).send('Error inserting store or geocoding address');
+  }
 });
 
 app.post('/add-review', (req, res) => {
   const { storeId, rating, comment, reviewerName } = req.body;
 
-  const query = 'INSERT INTO reviews(store_id, rating, comment, reviewer_name) VALUES($1, $2, $3, $4, $5)';
+  const query = 'INSERT INTO reviews(store_id, rating, comment, reviewer_name) VALUES($1, $2, $3, $4)';
   const values = [storeId, rating, comment, reviewerName];
 
   db.query(query, values, (err) => {
