@@ -23,7 +23,7 @@ db.connect();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
-app.use(express.static('public'));
+app.use(express.static("public"));
 
 // Home Route
 app.get("/", async (req, res) => {
@@ -31,7 +31,7 @@ app.get("/", async (req, res) => {
     const result = await db.query("SELECT * FROM stores");
     const stores = result.rows;
 
-    // Geocode the addresses to get latitude and longitude for each store
+    // Geocode addresses to get latitude & longitude
     const geocodePromises = stores.map(async (store) => {
       const address = store.address;
       const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${process.env.GOOGLE_MAPS_API_KEY}`;
@@ -45,11 +45,10 @@ app.get("/", async (req, res) => {
           store.longitude = location.lng;
         }
       } catch (geocodeError) {
-        console.error('Geocoding error:', geocodeError);
+        console.error("Geocoding error:", geocodeError);
       }
     });
 
-    // Wait for all geocode requests to finish
     await Promise.all(geocodePromises);
 
     res.render("index", { stores, googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY });
@@ -87,11 +86,10 @@ app.get("/store/:id", async (req, res) => {
 });
 
 // Add a store with geocoding
-app.post('/add-store', upload.single('image'), async (req, res) => {
+app.post("/add-store", upload.single("image"), async (req, res) => {
   const { name, address, contact_info } = req.body;
-  const image = req.file.buffer; // Get the image buffer
+  const image = req.file?.buffer; // Get the image buffer
 
-  // Geocoding API request to get latitude and longitude from address
   const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${process.env.GOOGLE_MAPS_API_KEY}`;
 
   try {
@@ -99,34 +97,47 @@ app.post('/add-store', upload.single('image'), async (req, res) => {
     const location = geocodeResponse.data.results[0]?.geometry?.location;
 
     if (!location) {
-      return res.status(400).send('Unable to find coordinates for the provided address.');
+      return res.status(400).send("Unable to find coordinates for the provided address.");
     }
 
     const latitude = location.lat;
     const longitude = location.lng;
 
-    // Insert into database
-    const query = 'INSERT INTO stores(name, address, contact_info, image, latitude, longitude) VALUES($1, $2, $3, $4, $5, $6)';
+    const query = "INSERT INTO stores(name, address, contact_info, image, latitude, longitude) VALUES($1, $2, $3, $4, $5, $6)";
     const values = [name, address, contact_info, image, latitude, longitude];
 
     await db.query(query, values);
-    res.redirect('/');
+    res.redirect("/");
   } catch (err) {
-    res.status(500).send('Error inserting store or geocoding address');
+    res.status(500).send("Error inserting store or geocoding address");
   }
 });
 
-app.post('/add-review', async (req, res) => {
+// Add a review
+app.post("/add-review", async (req, res) => {
   const { storeId, rating, comment, reviewerName } = req.body;
 
-  const query = 'INSERT INTO reviews(store_id, rating, comment, reviewer_name) VALUES($1, $2, $3, $4)';
+  const query = "INSERT INTO reviews(store_id, rating, comment, reviewer_name) VALUES($1, $2, $3, $4)";
   const values = [storeId, rating, comment, reviewerName];
 
   try {
     await db.query(query, values);
-    res.redirect('/store/' + storeId);
+    res.redirect("/store/" + storeId);
   } catch (err) {
-    res.status(500).send('Error inserting review');
+    res.status(500).send("Error inserting review");
+  }
+});
+
+// DELETE Store Route
+app.post("/store/:id/delete", async (req, res) => {
+  const storeId = req.params.id;
+
+  try {
+    await db.query("DELETE FROM stores WHERE id = $1", [storeId]);
+    res.redirect("/");
+  } catch (err) {
+    console.error("Error deleting store:", err);
+    res.status(500).send("Error deleting store");
   }
 });
 
