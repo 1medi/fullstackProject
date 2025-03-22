@@ -1,65 +1,91 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vape Store Locator</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-    <link rel="stylesheet" href="/styles.css">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"
+    />
+    <link rel="stylesheet" href="/styles.css" />
     <style>
-        .add-store-form {
-            display: none; 
-        }
-        #map {
-            height: 400px;
-            width: 100%;
-            margin-top: 20px;
-        }
+      .add-store-form {
+        display: none;
+      }
+      #map {
+        height: 400px;
+        width: 100%;
+        margin-top: 20px;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <%- include('header') %>
 
     <div class="container">
-        <h1 class="center-align">Vape Store Locator</h1>
-        
-        <div class="row">
-            <button class="add-button" role="button" id="fab">Add </button>
-            <div class="add-store-form">
-                <form action="/add-store" method="POST" class="col s12" enctype="multipart/form-data">
-                    <div class="input-field col s6">
-                        <input type="text" id="name" name="name" required>
-                        <label for="name">Store Name</label>
-                    </div>
-                    <div class="input-field col s6">
-                        <input type="text" id="address" name="address" required>
-                        <label for="address">Address</label>
-                    </div>
-                    <div class="input-field col s6">
-                        <input type="text" id="contact_info" name="contact_info" required>
-                        <label for="contact_info">Contact Info</label>
-                    </div>
-                    <div class="input-field col s6">
-                        <input type="file" id="image" name="image" accept="image/*" required>
-                    </div>
-                    <button type="submit" class="btn">Add Store</button>
-                </form>
-            </div>
-        </div>
-        
-        <ul class="collection">
-            <% stores.forEach(store => { %>
-                <li class="collection-item">
-                    <strong><a href="/store/<%= store.id %>"><%= store.name %></a></strong><p style="margin: 8px;"><%= store.address %> </p>
-                    <% if (store.image) { %>
-                        <img class="thumbnail" src="data:image/jpeg;base64,<%= store.image.toString('base64') %>" alt="Store Image">
-                    <% } %>
-                </li>
-            <% }); %>
-        </ul>
+      <h1 class="center-align">Vape Store Locator</h1>
 
-        <!-- Google Maps display -->
-        <div id="map"></div>
+      <div class="row">
+        <button class="add-button" role="button" id="fab">Add</button>
+        <div class="add-store-form">
+          <form
+            action="/add-store"
+            method="POST"
+            class="col s12"
+            enctype="multipart/form-data"
+          >
+            <div class="input-field col s6">
+              <input type="text" id="name" name="name" required />
+              <label for="name">Store Name</label>
+            </div>
+            <div class="input-field col s6">
+              <input type="text" id="address" name="address" required />
+              <label for="address">Address</label>
+            </div>
+            <div class="input-field col s6">
+              <input
+                type="text"
+                id="contact_info"
+                name="contact_info"
+                required
+              />
+              <label for="contact_info">Contact Info</label>
+            </div>
+            <div class="input-field col s6">
+              <input
+                type="file"
+                id="image"
+                name="image"
+                accept="image/*"
+                required
+              />
+            </div>
+            <button type="submit" class="btn">Add Store</button>
+          </form>
+        </div>
+      </div>
+
+      <ul class="collection">
+        <% stores.forEach(store => { %>
+        <li class="collection-item">
+          <strong
+            ><a href="/store/<%= store.id %>"><%= store.name %></a></strong
+          >
+          <p style="margin: 8px"><%= store.address %></p>
+          <% if (store.image) { %>
+          <img
+            class="thumbnail"
+            src="data:image/jpeg;base64,<%= store.image.toString('base64') %>"
+            alt="Store Image"
+          />
+          <% } %>
+        </li>
+        <% }); %>
+      </ul>
+
+      <!-- Google Maps display -->
+      <div id="map"></div>
     </div>
 
     <%- include('footer') %>
@@ -67,42 +93,44 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
     <!-- Google Maps API script -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDcMs8Q8YSQQssB6s_kU_5ygLubCAKoAR0&callback=initMap" async defer></script>
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDcMs8Q8YSQQssB6s_kU_5ygLubCAKoAR0&callback=initMap"
+      async
+      defer
+    ></script>
 
     <script>
-        // Show the form when the button is clicked
-        document.getElementById('fab').onclick = function() {
-            const form = document.querySelector('.add-store-form');
-            // Toggle form visibility
-            form.style.display = form.style.display === 'block' ? 'none' : 'block';
-        };
-    
-        // Initialize the Google Map and display markers
-        function initMap() {
-            const stores = <%- JSON.stringify(stores) %>; // All stores data
-    
-            // Default coordinates for the map (centered in case of no stores)
-            const defaultLatLng = { lat: 37.7749, lng: -122.4194 }; // San Francisco (change this if needed)
-            
-            // Set the initial center based on the first store's latitude and longitude
-            const firstStore = stores.length > 0 ? stores[0] : null;
-            const center = firstStore ? { lat: firstStore.latitude, lng: firstStore.longitude } : defaultLatLng;
-    
-            // Create the map
-            const map = new google.maps.Map(document.getElementById('map'), {
-                center: center,
-                zoom: 12,
-            });
-    
-            // Loop through stores and add markers
-            stores.forEach(store => {
-                new google.maps.Marker({
-                    position: { lat: store.latitude, lng: store.longitude },
-                    map: map,
-                    title: store.name,
-                });
-            });
-        }
-    </script>    
-</body>
+              document.getElementById('fab').onclick = function() {
+                  const form = document.querySelector('.add-store-form');
+                  form.style.display = form.style.display === 'block' ? 'none' : 'block';
+              };
+
+              // Initialize the Google Map and display markers
+              function initMap() {
+                  const stores = <%- JSON.stringify(stores) %>; // All stores data
+
+                  // Default coordinates for the map (centered in case of no stores)
+                  const defaultLatLng = { lat: 37.7749, lng: -122.4194 }; // San Francisco (change this if needed)
+
+                  // Set the initial center based on the first store's latitude and longitude
+                  const firstStore = stores.length > 0 ? stores[0] : null;
+                  const center = firstStore ? { lat: parseFloat(firstStore.latitude), lng: parseFloat(firstStore.longitude) } : defaultLatLng;
+
+                  // Create the map
+                  const map = new google.maps.Map(document.getElementById('map'), {
+                      center: center,
+                      zoom: 12,
+                  });
+
+                  // Loop through stores and add markers
+      stores.forEach(store => {
+          new google.maps.Marker({
+              position: { lat: parseFloat(store.latitude), lng: parseFloat(store.longitude) },
+              map: map,
+              title: store.name,
+          });
+      });
+              }
+    </script>
+  </body>
 </html>
