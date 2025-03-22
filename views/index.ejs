@@ -79,6 +79,10 @@
                     <% if (store.image) { %>
                         <img class="thumbnail" src="data:image/jpeg;base64,<%= store.image.toString('base64') %>" alt="Store Image">
                     <% } %>
+                    <!-- Remove Button -->
+                    <form action="/store/<%= store.id %>/delete" method="POST" style="display:inline;">
+                        <button type="submit" class="btn red">Remove</button>
+                    </form>
                 </li>
             <% }); %>
         </ul>
