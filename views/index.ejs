@@ -1,13 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vape Store Locator</title>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"
-    />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" />
     <link rel="stylesheet" href="/styles.css" />
     <style>
         .add-store-form {
@@ -37,17 +34,16 @@
             cursor: pointer;
             border-radius: 5px;
         }
-
     </style>
-  </head>
-  <body>
+</head>
+<body>
     <%- include('header') %>
 
     <div class="container">
         <h1 class="center-align">Vape Store Locator</h1>
-        
+
         <button class="add-button" id="fab">Add Store</button>
-        
+
         <div class="add-store-form">
             <form action="/add-store" method="POST" class="col s12" enctype="multipart/form-data">
                 <div class="row">
@@ -70,7 +66,7 @@
                 <button type="submit" class="btn">Add Store</button>
             </form>
         </div>
-        
+
         <ul class="collection">
             <% stores.forEach(store => { %>
                 <li class="collection-item">
@@ -83,25 +79,19 @@
             <% }); %>
         </ul>
 
-
-      <!-- Google Maps display -->
-      <div id="map"></div>
+        <div id="map"></div>
     </div>
 
     <%- include('footer') %>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
-    <!-- Google Maps API script using .env -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=<%= googleMapsApiKey %>&callback=initMap" async defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDcMs8Q8YSQQssB6s_kU_5ygLubCAKoAR0&libraries=places&callback=initMap" async defer></script>
 
     <script>
-        document.getElementById('fab').onclick = function() {
-            const form = document.querySelector('.add-store-form');
-            form.style.display = form.style.display === 'block' ? 'none' : 'block';
-        };
+        let map;
+        let marker;
 
-        // Initialize the Google Map and display markers
         function initMap() {
             const stores = <%- JSON.stringify(stores) %>; // All stores data
 
@@ -119,7 +109,36 @@
             });
 
             // Loop through stores and add markers
-stores.forEach(store => {
+            stores.forEach(store => {
+                new google.maps.Marker({
+                    position: { lat: parseFloat(store.latitude), lng: parseFloat(store.longitude) },
+                    map: map,
+                    title: store.name,
+                });
+            });
+
+            marker = new google.maps.Marker({
+                position: defaultLatLng,
+                map: map,
+            });
+
+            const input = document.getElementById("address");
+            const autocomplete = new google.maps.places.Autocomplete(input);
+            autocomplete.bindTo("bounds", map);
+
+            autocomplete.addListener("place_changed", function () {
+                const place = autocomplete.getPlace();
+                if (!place.geometry) {
+                    return;
+                }
+
+                // Do not change the map center
+                // marker.setPosition(place.geometry.location);
+                // const latitude = place.geometry.location.lat();
+                // const longitude = place.geometry.location.lng();
+                // console.log("Latitude:", latitude, "Longitude:", longitude);
+            });
+            stores.forEach(store => {
     new google.maps.Marker({
         position: { lat: parseFloat(store.latitude), lng: parseFloat(store.longitude) },
         map: map,
@@ -127,7 +146,11 @@ stores.forEach(store => {
     });
 });
         }
-    </script>    
-</body>
 
+        document.getElementById("fab").onclick = function () {
+            const form = document.querySelector(".add-store-form");
+            form.style.display = form.style.display === "block" ? "none" : "block";
+        };
+    </script>
+</body>
 </html>
