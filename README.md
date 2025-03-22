@@ -16,7 +16,7 @@
     contact_info VARCHAR(255),
     image BYTEA,
     latitude DECIMAL(9,6),
-    longitude DECIMAL (9,6),
+    longitude DECIMAL (9,6)
 );
 - Step 3: CREATE TABLE reviews (
     id SERIAL PRIMARY KEY,
