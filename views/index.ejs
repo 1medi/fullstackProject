@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vape Store Locator</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-    <link rel="stylesheet" href="/styles.css">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"
+    />
+    <link rel="stylesheet" href="/styles.css" />
     <style>
         .add-store-form {
             display: none;
@@ -34,9 +37,10 @@
             cursor: pointer;
             border-radius: 5px;
         }
+
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <%- include('header') %>
 
     <div class="container">
@@ -83,8 +87,9 @@
             <% }); %>
         </ul>
 
-        <!-- Google Maps display -->
-        <div id="map"></div>
+
+      <!-- Google Maps display -->
+      <div id="map"></div>
     </div>
 
     <%- include('footer') %>
@@ -128,4 +133,5 @@ stores.forEach(store => {
         }
     </script>    
 </body>
+
 </html>
