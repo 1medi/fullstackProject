@@ -25,6 +25,26 @@ app.use(express.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 app.use(express.static('public'));
 
+// Helper function to fetch place details
+async function fetchPlaceDetails(placeId) {
+  const placeDetailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&key=${process.env.GOOGLE_MAPS_API_KEY}`;
+  const placeDetailsResponse = await axios.get(placeDetailsUrl);
+  const openingHours = placeDetailsResponse.data.result.opening_hours?.weekday_text; // Extract opening hours
+  return {
+    openingHours: Array.isArray(openingHours) ? openingHours : [openingHours]
+  };
+}
+
+async function getPlaceIdFromDatabase(storeId) {
+  try {
+    const result = await db.query("SELECT place_id FROM stores WHERE id = $1", [storeId]);
+    return result.rows.length > 0 ? result.rows[0].place_id : null; // Return the Place ID or null if not found
+  } catch (error) {
+    console.error('Error fetching Place ID:', error);
+    return null; // Handle error gracefully
+  }
+}
+
 // Home Route
 app.get("/", async (req, res) => {
   try {
@@ -67,6 +87,10 @@ app.get("/stores", async (req, res) => {
 
 app.get("/store/:id", async (req, res) => {
   const storeId = req.params.id;
+  const placeId = await getPlaceIdFromDatabase(storeId); // Fetch the Place ID based on the store ID
+  if (!placeId) {
+    return res.status(404).send('Store not found');
+  }
   try {
     const storeResult = await db.query("SELECT * FROM stores WHERE id = $1", [storeId]);
     const reviewsResult = await db.query("SELECT * FROM reviews WHERE store_id = $1", [storeId]);
@@ -78,31 +102,27 @@ app.get("/store/:id", async (req, res) => {
     const store = storeResult.rows[0];
     console.log("Place ID:", store.place_id);
 
-    // Fetch place details to get opening hours
-    const placeDetailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${store.place_id}&key=${process.env.GOOGLE_MAPS_API_KEY}`;
-    const placeDetailsResponse = await axios.get(placeDetailsUrl);
-    const openingHours = placeDetailsResponse.data.result.opening_hours?.weekday_text; // Extract opening hours
-    const formattedOpeningHours = Array.isArray(openingHours) ? openingHours : [openingHours]; // Ensure it's an array
+    // Fetch place details to get opening and closing hours
+    const { openingHours } = await fetchPlaceDetails(store.place_id);
 
     const reviews = reviewsResult.rows;
-    console.log("Operating Hours:", formattedOpeningHours); // Log the operating hours
+    console.log("Operating Hours:", openingHours); // Log the operating hours
 
-    res.render("store", { store, reviews, formattedOpeningHours });
+    res.render("store", { placeId: placeId, store, reviews, formattedOpeningHours: openingHours });
   } catch (err) {
     res.status(500).send(err.message);
   }
 });
-app.post('/add-store', upload.single('image'), async (req, res) => {
-  const { name, address, contact_info, parking } = req.body; // Capture parking
-  const image = req.file.buffer; // Get the image buffer
 
-  // Geocoding API request to get latitude, longitude, and place_id from address
+app.post('/add-store', upload.single('image'), async (req, res) => {
+  const { name, address, contact_info, parking } = req.body; 
+  const image = req.file.buffer;
   const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${process.env.GOOGLE_MAPS_API_KEY}`;
 
   try {
     const geocodeResponse = await axios.get(geocodeUrl);
     const location = geocodeResponse.data.results[0]?.geometry?.location;
-    const placeId = geocodeResponse.data.results[0]?.place_id; // Extract place_id
+    const placeId = geocodeResponse.data.results[0]?.place_id; 
 
     if (!location || !placeId) {
       return res.status(400).send('Unable to find coordinates or place ID for the provided address.');
@@ -111,15 +131,12 @@ app.post('/add-store', upload.single('image'), async (req, res) => {
     const latitude = location.lat;
     const longitude = location.lng;
 
-    // Fetch place details to get opening hours
-    const placeDetailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&key=${process.env.GOOGLE_MAPS_API_KEY}`;
-    const placeDetailsResponse = await axios.get(placeDetailsUrl);
-    const openingHours = placeDetailsResponse.data.result.opening_hours?.weekday_text; // Extract opening hours
-    const formattedOpeningHours = Array.isArray(openingHours) ? openingHours : [openingHours]; // Ensure it's an array
-    const closingHours = placeDetailsResponse.data.result.closing_hours?.weekday_text;
+    // Fetch place details to get opening and closing hours
+    const { openingHours, closingHours } = await fetchPlaceDetails(placeId);
+
     // Insert into database
-    const query = 'INSERT INTO stores(name, address, contact_info, image, latitude, longitude, parking, place_id, opening_hours, closing_hours) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9,$10)';
-    const values = [name, address, contact_info, image, latitude, longitude, parking, placeId, formattedOpeningHours,closingHours];
+    const query = 'INSERT INTO stores(name, address, contact_info, image, latitude, longitude, parking, place_id, opening_hours) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)';
+    const values = [name, address, contact_info, image, latitude, longitude, parking, placeId, openingHours];
     await db.query(query, values);
 
     res.redirect('/');
