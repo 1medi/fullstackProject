@@ -1,13 +1,23 @@
 # VAPE STORE LOCATOR
-- npm install
-- import json file into pg admin
-- make sure credentials match inside index.js
+## Madi, Brian, Deluka and Kenny
 
 ## packages
+- npm install
 - npm install axios
 - npm install dotenv
 
-## sql Database instructions
+## Create a .env file
+- paste these into your .env file
+
+    GOOGLE_MAPS_API_KEY=AIzaSyDcMs8Q8YSQQssB6s_kU_5ygLubCAKoAR0
+    DB_USER=postgres
+    DB_HOST=localhost
+    DB_NAME=vaporstores
+    DB_PASSWORD=change this to your password
+    DB_PORT=5432
+    PORT=3009
+
+## SQL Database Creation Instructions
 - Step 1: CREATE DATABASE vaporstores;
 - Step 2: CREATE TABLE stores (
     id SERIAL PRIMARY KEY,
@@ -16,7 +26,9 @@
     contact_info VARCHAR(255),
     image BYTEA,
     latitude DECIMAL(9,6),
-    longitude DECIMAL (9,6)
+    longitude DECIMAL (9,6),
+    place_id VARCHAR(255),
+    opening_hours TEXT
 );
 - Step 3: CREATE TABLE reviews (
     id SERIAL PRIMARY KEY,
@@ -25,3 +37,16 @@
     comment TEXT,
     reviewer_name VARCHAR(255) NOT NULL
 );
+
+## Tasks Completed By Member
+### Madi
+- Task
+### Brian
+- Google Maps API integration
+- Google Maps Geocode integration
+- Remove Button to delete row data from SQL table
+- dotenv file integration
+### Deluka
+- Task
+### Kenny
+- Task
