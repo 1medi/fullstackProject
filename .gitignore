@@ -2,3 +2,6 @@
 .DS_Store
 /public
 public/.DS_Store
+.env
+.DS_Store
+
