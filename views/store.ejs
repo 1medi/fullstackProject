@@ -28,9 +28,9 @@
         <div class="row">
             <h3>Add a Review</h3>
             <div class="add-review-form">
-                <form action="/add-review" method="POST" class="col s12" enctype="multipart/form-data">
+                <form action="/add-review" method="POST" class="col s12" >
                     <div class="input-field col s6">
-                        <input type="text" id="reviewer_name" name="reviewer_name" required>
+                        <input type="text" id="reviewerName" name="reviewerName" required>
                         <label for="reviewer_name">Name</label>
                     </div>
                     <div class="input-field col s6">
@@ -41,9 +41,9 @@
                         <input type="number" id="rating" name="rating" min="1" max="5" required>
                         <label for="rating">Rating (1-5)</label>
                     </div>
-                    <div class="input-field col s6">
+                    <!-- <div class="input-field col s6">
                         <input type="file" id="image" name="image" accept="image/*" required>
-                    </div>
+                    </div> -->
                     <input type="hidden" name="storeId" value="<%= store.id %>"> 
                     <button type="submit" class="btn">Add Review</button>
                 </form>
