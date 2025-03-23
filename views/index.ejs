@@ -108,6 +108,11 @@
         <% }); %>
       </div>
 
+    <div>
+      <button id="refresh-recommendations">Refresh</button>
+    </div>
+    
+
     <%- include('footer') %>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
@@ -148,10 +153,7 @@ stores.forEach(store => {
 });
         }
     </script>
-      
-        <button id="refresh-recommendations">Refresh</button>
-      </div>
-      
+
       <script>
         // Store all recommended stores data for client-side refresh
         const allRecommendedStores = <%- JSON.stringify(allRecommendedStores || []) %>;
