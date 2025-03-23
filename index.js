@@ -66,11 +66,35 @@ app.get("/stores", async (req, res) => {
   }
 });
 
+// app.get("/store/:id", async (req, res) => {
+//   const storeId = req.params.id;
+//   try {
+//     const storeResult = await db.query("SELECT * FROM stores WHERE id = $1", [storeId]);
+//     const reviewsResult = await db.query("SELECT * FROM reviews WHERE store_id = $1", [storeId]);
+
+//     if (storeResult.rows.length === 0) {
+//       return res.status(404).send("Store not found");
+//     }
+
+//     const store = storeResult.rows[0];
+//     const reviews = reviewsResult.rows;
+
+//     res.render("store", { store, reviews });
+//   } catch (err) {
+//     res.status(500).send(err.message);
+//   }
+// });
 app.get("/store/:id", async (req, res) => {
   const storeId = req.params.id;
   try {
+    // Get store details
     const storeResult = await db.query("SELECT * FROM stores WHERE id = $1", [storeId]);
-    const reviewsResult = await db.query("SELECT * FROM reviews WHERE store_id = $1", [storeId]);
+
+    // Get reviews sorted by most recent (created_at DESC) by default
+    const reviewsResult = await db.query(
+      "SELECT * FROM reviews WHERE store_id = $1 ORDER BY created_at DESC",
+      [storeId]
+    );
 
     if (storeResult.rows.length === 0) {
       return res.status(404).send("Store not found");
@@ -79,11 +103,13 @@ app.get("/store/:id", async (req, res) => {
     const store = storeResult.rows[0];
     const reviews = reviewsResult.rows;
 
+    // Render the store page with most recent reviews by default
     res.render("store", { store, reviews });
   } catch (err) {
     res.status(500).send(err.message);
   }
 });
+
 
 // Add a store with geocoding
 app.post("/add-store", upload.single("image"), async (req, res) => {
@@ -127,6 +153,7 @@ app.post("/add-review", async (req, res) => {
     res.status(500).send("Error inserting review");
   }
 });
+
 
 // DELETE Store Route
 app.post("/store/:id/delete", async (req, res) => {
