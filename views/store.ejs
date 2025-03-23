@@ -1,30 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title><%= store.name %></title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-    <link rel="stylesheet" href="/styles.css">
-</head>
-<body>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body onload="init()">
     <%- include('header') %>
+
     <div class="container">
-        <% if (store.image) { %>
-            <img class="banner" src="data:image/jpeg;base64,<%= store.image.toString('base64') %>" alt="Store Image">
-        <% } %>
-        <h1 class="center-align"><%= store.name %></h1>
-        <p><strong>Address:</strong> <%= store.address %></p>
-        <h2>Reviews</h2>
-        <ul class="collection">
-            <% reviews.forEach(review => { %>
-                <li class="collection-item">
-                  <h3> <%= review.reviewer_name %></h3>
-                    <p>Rating: <%= review.rating %></p>
-                    <p><%= review.comment %></p>
-                </li>
-            <% }); %>
+      <img id="place-photo" alt="Store Photo" class="banner" ">
+      <!-- <% if (store.image) { %>
+      <img
+        class="banner"
+        src="data:image/jpeg;base64,<%= store.image.toString('base64') %>"
+        alt="Store Image"
+      />
+      <% } %> -->
+      <h1 class="center-align"><%= store.name %></h1>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr;">
+
+        <ul>
+          <h2 class="storeSubhead">Operating Hours</h2>
+          <% formattedOpeningHours.forEach(function(hour) { %>
+          <li><%= hour %></li>
+          <% }); %>
         </ul>
+
+        <div>
+          <h2 class="storeSubhead">
+            Can You Park Here?
+            <p style="font-size: 16px"><%= store.parking ? 'Yes' : 'No' %></p>
+          </h2>
+          
+          <p><strong>Address:</strong> <a href="https://www.google.com/maps/search/?api=1&query=<%= store.address %>" target="_blank"><%= store.address %></a></p>
+
         <div class="row">
             <h3>Add a Review</h3>
             <div class="add-review-form">
@@ -48,15 +64,100 @@
                     <button type="submit" class="btn">Add Review</button>
                 </form>
             </div>
-        </div>
 
+        </div>
+      </div>
+      <h2>Reviews</h2>
+      <ul class="collection">
+        <% reviews.forEach(review => { %>
+        <li class="collection-item">
+          <h3><%= review.reviewer_name %></h3>
+          <p>Rating: <%= review.rating %></p>
+          <p><%= review.comment %></p>
+        </li>
+        <% }); %>
+      </ul>
+      <div class="row">
+        <h3>Add a Review</h3>
+        <div class="add-review">
+          <form
+            action="/add-review"
+            method="POST"
+            class="col s12"
+            enctype="multipart/form-data"
+          >
+            <div class="input-field col s6">
+              <input
+                type="text"
+                id="reviewer_name"
+                name="reviewer_name"
+                required
+              />
+              <label for="reviewer_name">Name</label>
+            </div>
+
+            <div class="input-field col s6">
+              <input
+                type="number"
+                id="rating"
+                name="rating"
+                min="1"
+                max="5"
+                required
+              />
+              <label for="rating">Rating (1-5)</label>
+            </div>
+            <div class="input-field col s6">
+              <textarea id="comment" name="comment" rows="20" cols="33">
+                Your comment here.
+              </textarea>
+            </div>
+
+            <div class="input-field col s6">
+              <input type="file" id="image" name="image" accept="image/*" />
+            </div>
+
+            <input type="hidden" name="storeId" value="<%= store.id %>" />
+            <button type="submit" class="btn">Add Review</button>
+          </form>
+        </div>
+      </div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=<%= process.env.GOOGLE_MAPS_API_KEY %>&libraries=places&callback=initMap"
+      async
+      defer
+    ></script>
     <script>
-        document.getElementById('fab').onclick = function() {
-            const form = document.querySelector('.add-store-form');
-            form.style.display = form.style.display === 'block' ? 'none' : 'block';
-        };
+      document.getElementById("fab").onclick = function () {
+        const form = document.querySelector(".add-store-form");
+        form.style.display = form.style.display === "block" ? "none" : "block";
+      };
+
+      function init() {
+        var service = new google.maps.places.PlacesService(
+          document.createElement("div")
+        );
+        service.getDetails(
+          { placeId: "<%= placeId %>" },
+          function (place, status) {
+            if (status === google.maps.places.PlacesServiceStatus.OK) {
+              displayPhoto(place);
+            }
+          }
+        );
+      }
+
+      function displayPhoto(place) {
+        var photos = place.photos;
+        if (photos && photos.length > 0) {
+          var photoUrl = photos[0].getUrl({ maxWidth: 600, maxHeight: 400 });
+          document.getElementById("place-photo").src = photoUrl;
+        } else {
+          console.log("No photos available for this place.");
+        }
+      }
     </script>
-</body>
+  </body>
 </html>
