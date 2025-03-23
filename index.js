@@ -116,7 +116,6 @@ app.post("/add-store", upload.single("image"), async (req, res) => {
 // Add a review
 app.post("/add-review", async (req, res) => {
   const { storeId, rating, comment, reviewerName } = req.body;
-
   const query = "INSERT INTO reviews(store_id, rating, comment, reviewer_name) VALUES($1, $2, $3, $4)";
   const values = [storeId, rating, comment, reviewerName];
 
@@ -124,6 +123,7 @@ app.post("/add-review", async (req, res) => {
     await db.query(query, values);
     res.redirect("/store/" + storeId);
   } catch (err) {
+    console.log(err)
     res.status(500).send("Error inserting review");
   }
 });
