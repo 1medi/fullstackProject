@@ -92,6 +92,22 @@
       <div id="map"></div>
     </div>
 
+    <div class="recommended-stores-container">
+      <h2>⭐ Recommended Stores ⭐</h2>
+      
+      <div class="recommended-stores">
+        <% recommendedStores.forEach(store => { %>
+          <div class="store-card">
+            <img src="<%= store.image %>" alt="<%= store.name %> Thumbnail">
+            <div class="store-info">
+              <h3><%= store.name %></h3>
+              <p><%= store.address %></p>
+            </div>
+            <button class="add-store-btn" data-name="<%= store.name %>" data-address="<%= store.address %>" data-image="<%= store.image %>">Add to My Stores</button>
+          </div>
+        <% }); %>
+      </div>
+
     <%- include('footer') %>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
@@ -131,7 +147,141 @@ stores.forEach(store => {
     });
 });
         }
-    </script>    
+    </script>
+      
+        <button id="refresh-recommendations">Refresh</button>
+      </div>
+      
+      <script>
+        // Store all recommended stores data for client-side refresh
+        const allRecommendedStores = <%- JSON.stringify(allRecommendedStores || []) %>;
+        
+        // Function to get random stores
+        function getRandomStores(stores, count) {
+          const shuffled = [...stores].sort(() => 0.5 - Math.random());
+          return shuffled.slice(0, count);
+        }
+        
+        // Function to refresh the recommended stores section
+        function refreshRecommendedStores() {
+          if (allRecommendedStores.length === 0) {
+            return; // Nothing to refresh
+          }
+          
+          const recommendedStoresContainer = document.querySelector('.recommended-stores');
+          const randomStores = getRandomStores(allRecommendedStores, 3);
+          
+          // Clear current stores
+          recommendedStoresContainer.innerHTML = '';
+          
+          // Add new random stores
+          randomStores.forEach(store => {
+            const storeCard = document.createElement('div');
+            storeCard.className = 'store-card';
+            
+            storeCard.innerHTML = `
+              <img src="${store.image}" alt="${store.name} Thumbnail">
+              <div class="store-info">
+                <h3>${store.name}</h3>
+                <p>${store.address}</p>
+              </div>
+              <button class="add-store-btn" data-name="${store.name}" data-address="${store.address}" data-image="${store.image}">Add to My Stores</button>
+            `;
+            
+            recommendedStoresContainer.appendChild(storeCard);
+          });
+          
+          // Re-attach event listeners to new buttons
+          attachAddStoreEvents();
+        }
+        
+        // Function to attach event listeners to add store buttons
+        function attachAddStoreEvents() {
+          document.querySelectorAll('.add-store-btn').forEach(button => {
+            button.addEventListener('click', function() {
+              const name = this.getAttribute('data-name');
+              const address = this.getAttribute('data-address');
+              const image = this.getAttribute('data-image');
+              
+              // Add your logic here to add the store to your database
+              console.log(`Adding store: ${name}, ${address}, ${image}`);
+              
+              // You could implement an AJAX call here if you want to add the store without page refresh
+              // For example:
+              /*
+              fetch('/add-recommended-store', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name, address, image })
+              })
+              .then(response => response.json())
+              .then(data => {
+                if (data.success) {
+                  alert('Store added successfully!');
+                }
+              });
+              */
+            });
+          });
+        }
+        
+        // Attach event listener to refresh button
+        document.getElementById('refresh-recommendations').addEventListener('click', refreshRecommendedStores);
+        
+        // Initial attachment of events
+        attachAddStoreEvents();
+      </script>
+
+      <script>
+  document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".add-store-btn").forEach(button => {
+      button.addEventListener("click", async (event) => {
+        const btn = event.target;
+        
+        // Get store details from button attributes
+        const storeData = {
+          name: btn.dataset.name,
+          address: btn.dataset.address,
+          image: btn.dataset.image
+        };
+
+        // Send store data to the server
+        const response = await fetch("/store/add", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(storeData)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          alert("Store added successfully!");
+          // Optionally update the UI dynamically
+          const collectionList = document.querySelector(".collection");
+          const newStore = document.createElement("li");
+          newStore.classList.add("collection-item");
+          newStore.innerHTML = `
+            <strong><a href="/store/${result.store.id}">${result.store.name}</a></strong>
+            <p style="margin: 8px;">${result.store.address}</p>
+            ${storeData.image ? `<img class="thumbnail" src="${storeData.image}" alt="Store Image">` : ""}
+            <form action="/store/${result.store.id}/delete" method="POST" style="display:inline;">
+              <button type="submit" class="btn red">Remove</button>
+            </form>
+          `;
+          collectionList.appendChild(newStore);
+        } else {
+          alert("Failed to add store.");
+        }
+      });
+    });
+  });
+</script>
+
+
 </body>
 
 </html>
