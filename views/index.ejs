@@ -56,12 +56,21 @@
         >
           <div class="row">
             <div class="input-field col s6">
-              <input type="text" id="address" name="address" required />
-              <label for="address">Address</label>
+              <input
+                type="text"
+                id="address"
+                name="address"
+                placeholder="Address"
+              />
             </div>
             <div class="input-field col s6">
-              <input type="text" id="name" name="name" required />
-              <label for="name">Store Name</label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                placeholder="Store Name"
+                required
+              />
             </div>
 
             <div class="input-field col s6">
@@ -69,10 +78,11 @@
                 type="text"
                 id="contact_info"
                 name="contact_info"
+                placeholder="Contact Info"
                 required
               />
-              <label for="contact_info">Contact Info</label>
             </div>
+
             <div class="input-field col s6">
               <input
                 type="file"
@@ -82,6 +92,12 @@
                 required
               />
             </div>
+            <div class="input-field col s6">
+                <label>
+                  <input type="checkbox" id="parking" name="parking" />
+                  <span>Parking Available</span>
+                </label>
+              </div>
           </div>
           <button type="submit" class="btn">Add Store</button>
         </form>

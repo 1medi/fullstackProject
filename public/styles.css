@@ -29,6 +29,10 @@ footer{
   border-radius: 10px;
 }
 
+textarea {
+  resize: none;
+}
+
 .banner{
   display: flex;
   justify-content: center;

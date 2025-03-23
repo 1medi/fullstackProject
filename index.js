@@ -31,7 +31,6 @@ app.get("/", async (req, res) => {
     const result = await db.query("SELECT * FROM stores");
     const stores = result.rows;
 
-    // Geocode the addresses to get latitude and longitude for each store
     const geocodePromises = stores.map(async (store) => {
       const address = store.address;
       const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${process.env.GOOGLE_MAPS_API_KEY}`;
@@ -49,7 +48,6 @@ app.get("/", async (req, res) => {
       }
     });
 
-    // Wait for all geocode requests to finish
     await Promise.all(geocodePromises);
 
     res.render("index", { stores, googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY });
@@ -76,56 +74,83 @@ app.get("/store/:id", async (req, res) => {
     if (storeResult.rows.length === 0) {
       return res.status(404).send("Store not found");
     }
-
+    
     const store = storeResult.rows[0];
-    const reviews = reviewsResult.rows;
+    console.log("Place ID:", store.place_id);
 
-    res.render("store", { store, reviews });
+    // Fetch place details to get opening hours
+    const placeDetailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${store.place_id}&key=${process.env.GOOGLE_MAPS_API_KEY}`;
+    const placeDetailsResponse = await axios.get(placeDetailsUrl);
+    const openingHours = placeDetailsResponse.data.result.opening_hours?.weekday_text; // Extract opening hours
+    const formattedOpeningHours = Array.isArray(openingHours) ? openingHours : [openingHours]; // Ensure it's an array
+
+    const reviews = reviewsResult.rows;
+    console.log("Operating Hours:", formattedOpeningHours); // Log the operating hours
+
+    res.render("store", { store, reviews, formattedOpeningHours });
   } catch (err) {
     res.status(500).send(err.message);
   }
 });
-
-// Add a store with geocoding
 app.post('/add-store', upload.single('image'), async (req, res) => {
-  const { name, address, contact_info } = req.body;
+  const { name, address, contact_info, parking } = req.body; // Capture parking
   const image = req.file.buffer; // Get the image buffer
 
-  // Geocoding API request to get latitude and longitude from address
+  // Geocoding API request to get latitude, longitude, and place_id from address
   const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${process.env.GOOGLE_MAPS_API_KEY}`;
 
   try {
     const geocodeResponse = await axios.get(geocodeUrl);
     const location = geocodeResponse.data.results[0]?.geometry?.location;
+    const placeId = geocodeResponse.data.results[0]?.place_id; // Extract place_id
 
-    if (!location) {
-      return res.status(400).send('Unable to find coordinates for the provided address.');
+    if (!location || !placeId) {
+      return res.status(400).send('Unable to find coordinates or place ID for the provided address.');
     }
 
     const latitude = location.lat;
     const longitude = location.lng;
 
+    // Fetch place details to get opening hours
+    const placeDetailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&key=${process.env.GOOGLE_MAPS_API_KEY}`;
+    const placeDetailsResponse = await axios.get(placeDetailsUrl);
+    const openingHours = placeDetailsResponse.data.result.opening_hours?.weekday_text; // Extract opening hours
+    const formattedOpeningHours = Array.isArray(openingHours) ? openingHours : [openingHours]; // Ensure it's an array
+    const closingHours = placeDetailsResponse.data.result.closing_hours?.weekday_text;
     // Insert into database
-    const query = 'INSERT INTO stores(name, address, contact_info, image, latitude, longitude) VALUES($1, $2, $3, $4, $5, $6)';
-    const values = [name, address, contact_info, image, latitude, longitude];
-
+    const query = 'INSERT INTO stores(name, address, contact_info, image, latitude, longitude, parking, place_id, opening_hours, closing_hours) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9,$10)';
+    const values = [name, address, contact_info, image, latitude, longitude, parking, placeId, formattedOpeningHours,closingHours];
     await db.query(query, values);
+
     res.redirect('/');
   } catch (err) {
+    console.error(err); // Log the error details
     res.status(500).send('Error inserting store or geocoding address');
   }
 });
 
-app.post('/add-review', async (req, res) => {
-  const { storeId, rating, comment, reviewerName } = req.body;
+app.post('/add-review', upload.single('image'),  async (req, res) => {
+  console.log('Request Body:', req.body); // Log the entire request body
 
-  const query = 'INSERT INTO reviews(store_id, rating, comment, reviewer_name) VALUES($1, $2, $3, $4)';
-  const values = [storeId, rating, comment, reviewerName];
+  const { storeId, rating, comment, reviewerName } = req.body;
+  let imagePath = null;
+
+  if (req.file) {
+    imagePath = req.file.path;
+  }
+
+  if (!storeId || !rating || !comment || !reviewerName) {
+    return res.status(400).send('All fields are required.');
+  }
+
+  const query = 'INSERT INTO reviews(store_id, rating, comment, reviewer_name, image) VALUES($1, $2, $3, $4, $5)';
+  const values = [storeId, rating, comment, reviewerName, imagePath];
 
   try {
     await db.query(query, values);
     res.redirect('/store/' + storeId);
   } catch (err) {
+    console.error('Database error:', err);
     res.status(500).send('Error inserting review');
   }
 });

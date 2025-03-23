@@ -1,62 +1,99 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title><%= store.name %></title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-    <link rel="stylesheet" href="/styles.css">
-</head>
-<body>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
     <%- include('header') %>
     <div class="container">
-        <% if (store.image) { %>
-            <img class="banner" src="data:image/jpeg;base64,<%= store.image.toString('base64') %>" alt="Store Image">
-        <% } %>
-        <h1 class="center-align"><%= store.name %></h1>
-        <p><strong>Address:</strong> <%= store.address %></p>
-        <h2>Reviews</h2>
-        <ul class="collection">
-            <% reviews.forEach(review => { %>
-                <li class="collection-item">
-                  <h3> <%= review.reviewer_name %></h3>
-                    <p>Rating: <%= review.rating %></p>
-                    <p><%= review.comment %></p>
-                </li>
-            <% }); %>
-        </ul>
-        <div class="row">
-            <h3>Add a Review</h3>
-            <div class="add-review-form">
-                <form action="/add-review" method="POST" class="col s12" enctype="multipart/form-data">
-                    <div class="input-field col s6">
-                        <input type="text" id="reviewer_name" name="reviewer_name" required>
-                        <label for="reviewer_name">Name</label>
-                    </div>
-                    <div class="input-field col s6">
-                        <input type="text" id="comment" name="comment" required>
-                        <label for="comment">Review Text</label>
-                    </div>
-                    <div class="input-field col s6">
-                        <input type="number" id="rating" name="rating" min="1" max="5" required>
-                        <label for="rating">Rating (1-5)</label>
-                    </div>
-                    <div class="input-field col s6">
-                        <input type="file" id="image" name="image" accept="image/*" required>
-                    </div>
-                    <input type="hidden" name="storeId" value="<%= store.id %>"> 
-                    <button type="submit" class="btn">Add Review</button>
-                </form>
+      <% if (store.image) { %>
+      <img
+        class="banner"
+        src="data:image/jpeg;base64,<%= store.image.toString('base64') %>"
+        alt="Store Image"
+      />
+      <% } %>
+      <h1 class="center-align"><%= store.name %></h1>
+      <h2>Operating Hours</h2>
+      <ul>
+        <% formattedOpeningHours.forEach(function(hour) { %>
+          <li><%= hour %></li>
+        <% }); %>
+      </ul>
+      <p><strong>Address:</strong> <%= store.address %></p>
+      <h2>
+        Can You Park Here?
+        <p style="font-size: 16px"><%= store.parking ? 'Yes' : 'No' %></p>
+      </h2>
+      <h2>Reviews</h2>
+      <ul class="collection">
+        <% reviews.forEach(review => { %>
+        <li class="collection-item">
+          <h3><%= review.reviewer_name %></h3>
+          <p>Rating: <%= review.rating %></p>
+          <p><%= review.comment %></p>
+        </li>
+        <% }); %>
+      </ul>
+      <div class="row">
+        <h3>Add a Review</h3>
+        <div class="add-review">
+          <form
+            action="/add-review"
+            method="POST"
+            class="col s12"
+            enctype="multipart/form-data"
+          >
+            <div class="input-field col s6">
+              <input
+                type="text"
+                id="reviewer_name"
+                name="reviewer_name"
+                required
+              />
+              <label for="reviewer_name">Name</label>
             </div>
-        </div>
 
+            <div class="input-field col s6">
+              <input
+                type="number"
+                id="rating"
+                name="rating"
+                min="1"
+                max="5"
+                required
+              />
+              <label for="rating">Rating (1-5)</label>
+            </div>
+            <div class="input-field col s6">
+              <textarea id="comment" name="comment" rows="20" cols="33">
+                Your comment here.
+              </textarea>
+            </div>
+
+            <div class="input-field col s6">
+              <input type="file" id="image" name="image" accept="image/*" />
+            </div>
+
+            <input type="hidden" name="storeId" value="<%= store.id %>" />
+            <button type="submit" class="btn">Add Review</button>
+          </form>
+        </div>
+      </div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script>
-        document.getElementById('fab').onclick = function() {
-            const form = document.querySelector('.add-store-form');
-            form.style.display = form.style.display === 'block' ? 'none' : 'block';
-        };
+      document.getElementById("fab").onclick = function () {
+        const form = document.querySelector(".add-store-form");
+        form.style.display = form.style.display === "block" ? "none" : "block";
+      };
     </script>
-</body>
+  </body>
 </html>
