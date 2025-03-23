@@ -92,6 +92,22 @@
       <div id="map"></div>
     </div>
 
+    <div class="recommended-stores-container">
+      <h2>⭐ Recommended Stores ⭐</h2>
+      
+      <div class="recommended-stores">
+        <% recommendedStores.forEach(store => { %>
+          <div class="store-card">
+            <img src="<%= store.image %>" alt="<%= store.name %> Thumbnail">
+            <div class="store-info">
+              <h3><%= store.name %></h3>
+              <p><%= store.address %></p>
+            </div>
+            <button class="add-store-btn" data-name="<%= store.name %>" data-address="<%= store.address %>" data-image="<%= store.image %>">Add to My Stores</button>
+          </div>
+        <% }); %>
+      </div>
+
     <%- include('footer') %>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
@@ -132,22 +148,6 @@ stores.forEach(store => {
 });
         }
     </script>
-    
-    <div class="recommended-stores-container">
-        <h2>⭐ Recommended Stores ⭐</h2>
-        
-        <div class="recommended-stores">
-          <% recommendedStores.forEach(store => { %>
-            <div class="store-card">
-              <img src="<%= store.image %>" alt="<%= store.name %> Thumbnail">
-              <div class="store-info">
-                <h3><%= store.name %></h3>
-                <p><%= store.address %></p>
-              </div>
-              <button class="add-store-btn" data-name="<%= store.name %>" data-address="<%= store.address %>" data-image="<%= store.image %>">Add to My Stores</button>
-            </div>
-          <% }); %>
-        </div>
       
         <button id="refresh-recommendations">Refresh</button>
       </div>
@@ -233,6 +233,107 @@ stores.forEach(store => {
         // Initial attachment of events
         attachAddStoreEvents();
       </script>
+
+      <script>
+  document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".add-store-btn").forEach(button => {
+      button.addEventListener("click", async (event) => {
+        const btn = event.target;
+        
+        // Get store details from button attributes
+        const storeData = {
+          name: btn.dataset.name,
+          address: btn.dataset.address,
+          image: btn.dataset.image
+        };
+
+        // Send store data to the server
+        const response = await fetch("/store/add", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(storeData)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          alert("Store added successfully!");
+          // Optionally update the UI dynamically
+          const collectionList = document.querySelector(".collection");
+          const newStore = document.createElement("li");
+          newStore.classList.add("collection-item");
+          newStore.innerHTML = `
+            <strong><a href="/store/${result.store.id}">${result.store.name}</a></strong>
+            <p style="margin: 8px;">${result.store.address}</p>
+            ${storeData.image ? `<img class="thumbnail" src="${storeData.image}" alt="Store Image">` : ""}
+            <form action="/store/${result.store.id}/delete" method="POST" style="display:inline;">
+              <button type="submit" class="btn red">Remove</button>
+            </form>
+          `;
+          collectionList.appendChild(newStore);
+        } else {
+          alert("Failed to add store.");
+        }
+      });
+    });
+  });
+</script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".add-store-btn").forEach(button => {
+      button.addEventListener("click", async (event) => {
+        const btn = event.target;
+
+        // Get store details from button attributes
+        const storeData = {
+          name: btn.dataset.name,
+          address: btn.dataset.address,
+          image: btn.dataset.image
+        };
+
+        try {
+          // Send store data to the server
+          const response = await fetch("/store/add", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(storeData)
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            alert("Store added successfully!");
+
+            // Update UI: Add new store to the collection list
+            const collectionList = document.querySelector(".collection");
+            const newStore = document.createElement("li");
+            newStore.classList.add("collection-item");
+            newStore.innerHTML = `
+              <strong><a href="/store/${result.store.id}">${result.store.name}</a></strong>
+              <p style="margin: 8px;">${result.store.address}</p>
+              ${result.store.image ? `<img class="thumbnail" src="data:image/jpeg;base64,${result.store.image}" alt="Store Image">` : ""}
+              <form action="/store/${result.store.id}/delete" method="POST" style="display:inline;">
+                <button type="submit" class="btn red">Remove</button>
+              </form>
+            `;
+            collectionList.appendChild(newStore);
+          } else {
+            alert("Failed to add store.");
+          }
+        } catch (error) {
+          console.error("Error adding store:", error);
+          alert("An error occurred. Please try again.");
+        }
+      });
+    });
+  });
+</script>
+
     
 </body>
 
