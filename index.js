@@ -174,8 +174,18 @@ app.post("/store/add", async (req, res) => {
     const location = geocodeResponse.data.results[0]?.geometry?.location;
     if (!location) return res.status(400).json({ success: false, message: "Could not geocode address" });
 
+    const result = await db.query(
+      "INSERT INTO stores(name, address, contact_info, image, latitude, longitude) VALUES($1, $2, $3, $4, $5, $6) RETURNING id",
+      [name, address, 'Added from recommendations', image, location.lat, location.lng]
+    );
 
-app.post('/add-review', upload.single('image'),  async (req, res) => {
+    res.json({ success: true, store: { id: result.rows[0].id, name, address, image } });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+app.post('/add-review', upload.single('image'), async (req, res) => {
   console.log('Request Body:', req.body); // Log the entire request body
 
   const { storeId, rating, comment, reviewerName } = req.body;
@@ -192,12 +202,9 @@ app.post('/add-review', upload.single('image'),  async (req, res) => {
   const query = 'INSERT INTO reviews(store_id, rating, comment, reviewer_name, image) VALUES($1, $2, $3, $4, $5)';
   const values = [storeId, rating, comment, reviewerName, imagePath];
 
-    const result = await db.query(
-      "INSERT INTO stores(name, address, contact_info, image, latitude, longitude) VALUES($1, $2, $3, $4, $5, $6) RETURNING id",
-      [name, address, 'Added from recommendations', image, location.lat, location.lng]
-    );
-
-    res.json({ success: true, store: { id: result.rows[0].id, name, address, image } });
+  try {
+    await db.query(query, values); // Execute the review insertion
+    res.json({ success: true, message: 'Review added successfully.' });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
