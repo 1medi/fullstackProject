@@ -3,6 +3,10 @@ import pg from "pg";
 import multer from "multer";
 import axios from "axios";
 import dotenv from "dotenv";
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
 
 dotenv.config(); // Load .env variables
 
@@ -31,6 +35,19 @@ app.get("/", async (req, res) => {
     const result = await db.query("SELECT * FROM stores");
     const stores = result.rows;
 
+
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+
+
+    // Read recommended stores from JSON file
+
+    const allRecommendedStores = JSON.parse(
+      fs.readFileSync(path.join(__dirname, 'recommended.json'), 'utf8')
+    );    
+
+    const recommendedStores = getRandomStores(allRecommendedStores, 3);
+
     // Geocode addresses to get latitude & longitude
     const geocodePromises = stores.map(async (store) => {
       const address = store.address;
@@ -51,11 +68,18 @@ app.get("/", async (req, res) => {
 
     await Promise.all(geocodePromises);
 
-    res.render("index", { stores, googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY });
+    console.log("Recommended Stores:", recommendedStores);
+
+    res.render("index", { stores, googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY, recommendedStores, allRecommendedStores });
   } catch (err) {
     res.status(500).send(err.message);
   }
 });
+
+function getRandomStores(stores, count) {
+  const shuffled = [...stores].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, count);
+}
 
 app.get("/stores", async (req, res) => {
   try {
@@ -110,6 +134,35 @@ app.post("/add-store", upload.single("image"), async (req, res) => {
     res.redirect("/");
   } catch (err) {
     res.status(500).send("Error inserting store or geocoding address");
+  }
+});
+
+app.post('/add-recommended-store', express.json(), async (req, res) => {
+  try {
+    const { name, address } = req.body;
+    
+    // You'll need to handle image differently since it's a path
+    // For now, let's assume we're just storing the store info without the image
+    
+    // First, geocode the address
+    const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${process.env.GOOGLE_MAPS_API_KEY}`;
+    const geocodeResponse = await axios.get(geocodeUrl);
+    const location = geocodeResponse.data.results[0]?.geometry?.location;
+    
+    if (!location) {
+      return res.status(400).json({ success: false, message: 'Could not geocode address' });
+    }
+    
+    // Insert into database
+    const query = "INSERT INTO stores(name, address, contact_info, latitude, longitude) VALUES($1, $2, $3, $4, $5)";
+    const values = [name, address, 'Added from recommendations', location.lat, location.lng];
+    
+    await db.query(query, values);
+    
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error adding recommended store:', err);
+    res.status(500).json({ success: false, message: err.message });
   }
 });
 
