@@ -158,6 +158,11 @@
     <script>
           let map;
           let marker;
+          document.getElementById("fab").onclick = function () {
+        const form = document.querySelector(".add-store-form");
+        form.style.display = form.style.display === "block" ? "none" : "block";
+      };
+
 
           function autofill (){
               const storeInput = document.getElementById("name");
