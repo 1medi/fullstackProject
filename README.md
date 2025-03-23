@@ -9,13 +9,13 @@
 ## Create a .env file
 - paste these into your .env file
 
-    GOOGLE_MAPS_API_KEY=AIzaSyDcMs8Q8YSQQssB6s_kU_5ygLubCAKoAR0
-    DB_USER=postgres
-    DB_HOST=localhost
-    DB_NAME=vaporstores
-    DB_PASSWORD=change this to your password
-    DB_PORT=5432
-    PORT=3009
+    GOOGLE_MAPS_API_KEY=AIzaSyDcMs8Q8YSQQssB6s_kU_5ygLubCAKoAR0  
+    DB_USER=postgres  
+    DB_HOST=localhost  
+    DB_NAME=vaporstores  
+    DB_PASSWORD=change this to your password  
+    DB_PORT=5432  
+    PORT=3009  
 
 ## SQL Database Creation Instructions
 - Step 1: CREATE DATABASE vaporstores;
