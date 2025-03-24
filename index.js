@@ -160,11 +160,11 @@ app.get("/store/:id", async (req, res) => {
 
 app.post("/add-store", upload.single("image"), async (req, res) => {
   const { name, address, contact_info } = req.body;
+  console.log(req.body)
   let imagePath = null;
 
-  // Check if an image file is uploaded
   if (req.file) {
-    imagePath = req.file.buffer; // Get the image buffer
+    imagePath = req.file.buffer;
   }
 
   const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
