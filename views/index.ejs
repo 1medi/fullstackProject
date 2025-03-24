@@ -82,22 +82,6 @@
                 required
               />
             </div>
-
-            <div class="input-field col s6">
-              <input
-                type="file"
-                id="image"
-                name="image"
-                accept="image/*"
-                required
-              />
-            </div>
-            <div class="input-field col s6">
-              <label>
-                <input type="checkbox" id="parking" name="parking" />
-                <span>Parking Available</span>
-              </label>
-            </div>
           </div>
           <button type="submit" class="btn">Add Store</button>
         </form>
@@ -148,167 +132,165 @@
         </div>
         <% }); %>
       </div>
-
-      <%- include('footer') %>
-
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-
-      <script
-        src="https://maps.googleapis.com/maps/api/js?key=<%= process.env.GOOGLE_MAPS_API_KEY %>&libraries=places&callback=initMap"
-        async
-        defer
-      ></script>
-
-      <script>
-            let map;
-            let marker;
-            document.getElementById("fab").onclick = function () {
-          const form = document.querySelector(".add-store-form");
-          form.style.display = form.style.display === "block" ? "none" : "block";
-        };
-
-
-            function autofill (){
-                const storeInput = document.getElementById("name");
-                const autocomplete = new google.maps.places.Autocomplete(name);
-            }
-
-            function initMap() {
-            const stores = <%- JSON.stringify(stores) %>; // All stores data
-
-            // Default coordinates for the map (centered in case of no stores)
-            const defaultLatLng = { lat: 37.7749, lng: -122.4194 }; // San Francisco (change this if needed)
-
-            // Set the initial center based on the first store's latitude and longitude
-            const firstStore = stores.length > 0 ? stores[0] : null;
-            const center = firstStore ? { lat: parseFloat(firstStore.latitude), lng: parseFloat(firstStore.longitude) } : defaultLatLng;
-
-            // Create the map
-            map = new google.maps.Map(document.getElementById('map'), {
-                center: center,
-                zoom: 12,
-            });
-
-            // Loop through stores and add markers
-            stores.forEach(store => {
-                new google.maps.Marker({
-                    position: { lat: parseFloat(store.latitude), lng: parseFloat(store.longitude) },
-                    map: map,
-                    title: store.name,
-                });
-            });
-
-            marker = new google.maps.Marker({
-                position: defaultLatLng,
-                map: map,
-            });
-
-            const addressInput = document.getElementById("address");
-            const autocomplete = new google.maps.places.Autocomplete(addressInput);
-            autocomplete.bindTo("bounds", map);
-
-            // Add listener for when a place is selected
-            autocomplete.addListener("place_changed", function () {
-                const place = autocomplete.getPlace();
-                if (!place.geometry) {
-                    return;
-                }
-
-                // Autofill the store name and contact info fields
-                document.getElementById('name').value = place.name || '';
-                document.getElementById('contact_info').value = place.formatted_phone_number || '';
-
-                // Reveal additional fields and submit button
-                document.getElementById('additional-fields').style.display = 'block';
-                document.getElementById('submit-button').style.display = 'block';
-            });
-
-            // Add markers for existing stores
-            stores.forEach(store => {
-                new google.maps.Marker({
-                    position: { lat: parseFloat(store.latitude), lng: parseFloat(store.longitude) },
-                    map: map,
-                    title: store.name,
-                });
-            });
-        }
-      </script>
-
       <button id="refresh-recommendations">Refresh</button>
     </div>
 
+    <%- include('footer') %>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=<%= process.env.GOOGLE_MAPS_API_KEY %>&libraries=places&callback=initMap"
+      async
+      defer
+    ></script>
+
+    <script>
+      let map;
+      let marker;
+      document.getElementById("fab").onclick = function () {
+      const form = document.querySelector(".add-store-form");
+      form.style.display = form.style.display === "block" ? "none" : "block";
+      };
+
+
+      function autofill (){
+      const storeInput = document.getElementById("name");
+      const autocomplete = new google.maps.places.Autocomplete(name);
+      }
+
+      function initMap() {
+      const stores = <%- JSON.stringify(stores) %>; // All stores data
+
+      // Default coordinates for the map (centered in case of no stores)
+      const defaultLatLng = { lat: 37.7749, lng: -122.4194 }; // San Francisco (change this if needed)
+
+      // Set the initial center based on the first store's latitude and longitude
+      const firstStore = stores.length > 0 ? stores[0] : null;
+      const center = firstStore ? { lat: parseFloat(firstStore.latitude), lng: parseFloat(firstStore.longitude) } : defaultLatLng;
+
+      // Create the map
+      map = new google.maps.Map(document.getElementById('map'), {
+      center: center,
+      zoom: 12,
+      });
+
+      // Loop through stores and add markers
+      stores.forEach(store => {
+      new google.maps.Marker({
+      position: { lat: parseFloat(store.latitude), lng: parseFloat(store.longitude) },
+      map: map,
+      title: store.name,
+      });
+      });
+
+      marker = new google.maps.Marker({
+      position: defaultLatLng,
+      map: map,
+      });
+
+      const addressInput = document.getElementById("address");
+      const autocomplete = new google.maps.places.Autocomplete(addressInput);
+      autocomplete.bindTo("bounds", map);
+
+      // Add listener for when a place is selected
+      autocomplete.addListener("place_changed", function () {
+      const place = autocomplete.getPlace();
+      if (!place.geometry) {
+      return;
+      }
+
+      // Autofill the store name and contact info fields
+      document.getElementById('name').value = place.name || '';
+      document.getElementById('contact_info').value = place.formatted_phone_number || '';
+
+      // Reveal additional fields and submit button
+      document.getElementById('additional-fields').style.display = 'block';
+      document.getElementById('submit-button').style.display = 'block';
+      });
+
+      // Add markers for existing stores
+      stores.forEach(store => {
+      new google.maps.Marker({
+      position: { lat: parseFloat(store.latitude), lng: parseFloat(store.longitude) },
+      map: map,
+      title: store.name,
+      });
+      });
+      }
+    </script>
     <script>
       // Store all recommended stores data for client-side refresh
       const allRecommendedStores = <%- JSON.stringify(allRecommendedStores || []) %>;
 
       // Function to get random stores
       function getRandomStores(stores, count) {
-        const shuffled = [...stores].sort(() => 0.5 - Math.random());
-        return shuffled.slice(0, count);
+      const shuffled = [...stores].sort(() => 0.5 - Math.random());
+      return shuffled.slice(0, count);
       }
 
       // Function to refresh the recommended stores section
       function refreshRecommendedStores() {
-        if (allRecommendedStores.length === 0) {
-          return; // Nothing to refresh
-        }
+      if (allRecommendedStores.length === 0) {
+      return; // Nothing to refresh
+      }
 
-        const recommendedStoresContainer = document.querySelector('.recommended-stores');
-        const randomStores = getRandomStores(allRecommendedStores, 3);
+      const recommendedStoresContainer = document.querySelector('.recommended-stores');
+      const randomStores = getRandomStores(allRecommendedStores, 3);
 
-        // Clear current stores
-        recommendedStoresContainer.innerHTML = '';
+      // Clear current stores
+      recommendedStoresContainer.innerHTML = '';
 
-        // Add new random stores
-        randomStores.forEach(store => {
-          const storeCard = document.createElement('div');
-          storeCard.className = 'store-card';
+      // Add new random stores
+      randomStores.forEach(store => {
+      const storeCard = document.createElement('div');
+      storeCard.className = 'store-card';
 
-          storeCard.innerHTML = `
-            <img src="${store.image}" alt="${store.name} Thumbnail">
-            <div class="store-info">
-              <h3>${store.name}</h3>
-              <p>${store.address}</p>
-            </div>
-            <button class="add-store-btn" data-name="${store.name}" data-address="${store.address}" data-image="${store.image}">Add to My Stores</button>
-          `;
+      storeCard.innerHTML = `
+      <img src="${store.image}" alt="${store.name} Thumbnail">
+      <div class="store-info">
+      <h3>${store.name}</h3>
+      <p>${store.address}</p>
+      </div>
+      <button class="add-store-btn" data-name="${store.name}" data-address="${store.address}" data-image="${store.image}">Add to My Stores</button>
+      `;
 
-          recommendedStoresContainer.appendChild(storeCard);
-        });
+      recommendedStoresContainer.appendChild(storeCard);
+      });
 
-        // Re-attach event listeners to new buttons
-        attachAddStoreEvents();
+      // Re-attach event listeners to new buttons
+      attachAddStoreEvents();
       }
 
       // Function to attach event listeners to add store buttons
       function attachAddStoreEvents() {
-        document.querySelectorAll('.add-store-btn').forEach(button => {
-          button.addEventListener('click', function() {
-            const name = this.getAttribute('data-name');
-            const address = this.getAttribute('data-address');
-            const image = this.getAttribute('data-image');
-            // Add your logic here to add the store to your database
-            console.log(`Adding store: ${name}, ${address}, ${image}`);
+      document.querySelectorAll('.add-store-btn').forEach(button => {
+      button.addEventListener('click', function() {
+      const name = this.getAttribute('data-name');
+      const address = this.getAttribute('data-address');
+      const image = this.getAttribute('data-image');
+      // Add your logic here to add the store to your database
+      console.log(`Adding store: ${name}, ${address}, ${image}`);
 
-            // You could implement an AJAX call here if you want to add the store without page refresh
-            // For example:
-            /*
-            fetch('/add-recommended-store', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({ name, address, image })
-            })
-            .then(response => response.json())
-            .then(data => {
-              if (data.success) {
-                alert('Store added successfully!');
-              }
-            });
-            */
-          });
-        });
+      // You could implement an AJAX call here if you want to add the store without page refresh
+      // For example:
+      /*
+      fetch('/add-recommended-store', {
+      method: 'POST',
+      headers: {
+      'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ name, address, image })
+      })
+      .then(response => response.json())
+      .then(data => {
+      if (data.success) {
+      alert('Store added successfully!');
+      }
+      });
+      */
+      });
+      });
       }
 
       // Attach event listener to refresh button
@@ -350,21 +332,12 @@
               const newStore = document.createElement("li");
               newStore.classList.add("collection-item");
               newStore.innerHTML = `
-            <strong><a href="/store/${result.store.id}">${
-                result.store.name
-              }</a></strong>
-            <p style="margin: 8px;">${result.store.address}</p>
-            ${
-              storeData.image
-                ? `<img class="thumbnail" src="${storeData.image}" alt="Store Image">`
-                : ""
-            }
-            <form action="/store/${
-              result.store.id
-            }/delete" method="POST" style="display:inline;">
-              <button type="submit" class="btn red">Remove</button>
-            </form>
-          `;
+<strong><a href="/store/${result.store.id}">${result.store.name}</a></strong>
+<p style="margin: 8px;">${result.store.address}</p>
+<form action="/store/${result.store.id}/delete" method="POST" style="display:inline;">
+<button type="submit" class="btn red">Remove</button>
+</form>
+`;
               collectionList.appendChild(newStore);
             } else {
               alert("Failed to add store.");

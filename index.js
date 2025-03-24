@@ -123,12 +123,9 @@ app.get("/store/:id", async (req, res) => {
   const storeId = req.params.id;
   let store;
   let placeId;
-
   try {
     // Get store details
     const storeResult = await db.query("SELECT * FROM stores WHERE id = $1", [storeId]);
-
-    // Get reviews sorted by most recent (created_at DESC) by default
     const reviewsResult = await db.query(
       "SELECT * FROM reviews WHERE store_id = $1 ORDER BY created_at DESC",
       [storeId]
@@ -149,18 +146,15 @@ app.get("/store/:id", async (req, res) => {
       return res.status(404).send("Store not found");
     }
 
-    // Fetch place details from Google Places API
-    const { openingHours } = await fetchPlaceDetails(placeId);
-
     // Render the store page with most recent reviews by default
     res.render("store", {
       store,
       reviews: reviewsResult.rows,
-      formattedOpeningHours: openingHours,
+      placeId, // Include placeId here
     });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send(err.message);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error retrieving store details");
   }
 });
 
@@ -191,19 +185,17 @@ app.post("/add-store", upload.single("image"), async (req, res) => {
     const { openingHours, closingHours } = await fetchPlaceDetails(placeId);
 
     // Insert into database
-    const query =
-      "INSERT INTO stores(name, address, contact_info, image, latitude, longitude, parking, place_id, opening_hours) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)";
-    const values = [
-      name,
-      address,
-      contact_info,
-      image,
-      latitude,
-      longitude,
-      parking,
-      placeId,
-      openingHours,
-    ];
+const query =
+  "INSERT INTO stores(name, address, contact_info, latitude, longitude, place_id, opening_hours) VALUES($1, $2, $3, $4, $5, $6, $7)";
+const values = [
+  name,
+  address,
+  contact_info,
+  latitude,
+  longitude,
+  placeId,
+  openingHours,
+];
     await db.query(query, values);
 
     res.redirect("/");
@@ -253,10 +245,10 @@ app.post("/store/add", async (req, res) => {
   }
 });
 
-app.post("/add-review", upload.single("image"), async (req, res) => {
+app.post("/add-review", async (req, res) => {
   console.log("Request Body:", req.body); // Log the entire request body
 
-  const { storeId, rating, comment, reviewerName } = req.body;
+  const { storeId, rating, comment, reviewerName, returnUrl } = req.body;
   let imagePath = null;
 
   if (req.file) {
@@ -268,17 +260,16 @@ app.post("/add-review", upload.single("image"), async (req, res) => {
   }
 
   const query =
-    "INSERT INTO reviews(store_id, rating, comment, reviewer_name, image) VALUES($1, $2, $3, $4, $5)";
-  const values = [storeId, rating, comment, reviewerName, imagePath];
+    "INSERT INTO reviews(store_id, rating, comment, reviewer_name) VALUES($1, $2, $3, $4)";
+  const values = [storeId, rating, comment, reviewerName];
 
   try {
-    await db.query(query, values); // Execute the review insertion
-    res.json({ success: true, message: "Review added successfully." });
+    await db.query(query, values); 
+    return res.redirect(`/store/${storeId}`); 
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    res.status(500).send(err.message); 
   }
 });
-
 
 app.post("/store/:id/delete", async (req, res) => {
   try {
