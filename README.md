@@ -50,4 +50,7 @@
 ### Deluka
 - Task
 ### Kenny
-- Task
+- Adding recommended stores section
+- Created recommended.json containing recommended store data
+- Dynamically display recommended stores with refresh button
+- Add to My Stores button to add recommended store to collection
