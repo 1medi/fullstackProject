@@ -41,7 +41,11 @@
 
 ## Tasks Completed By Member
 ### Madi
-- Task
+- Add store functionality and autofill capabilities using Google Maps API
+- Merge conflict resolution
+- Image fetching using Google Places
+- Dynamic store pages
+- Postgres tables, columns
 ### Brian
 - Google Maps API integration
 - Google Maps Geocode integration
