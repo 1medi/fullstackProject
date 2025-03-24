@@ -275,49 +275,6 @@ app.post("/add-review", upload.single("image"), async (req, res) => {
   }
 });
 
-app.post("/store/add", async (req, res) => {
-  const { name, address, image, place_id } = req.body; // Include place_id
-  console.log("Received store data:", { name, address, image, place_id }); // Log the received data
-  console.log("Inserting into database with Place ID:", place_id); // Log the place_id being inserted
-
-  try {
-    const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
-      address
-    )}&key=${process.env.GOOGLE_MAPS_API_KEY}`;
-    const geocodeResponse = await axios.get(geocodeUrl);
-    const location = geocodeResponse.data.results[0]?.geometry?.location;
-    if (!location)
-      return res
-        .status(400)
-        .json({ success: false, message: "Could not geocode address" });
-
-    const result = await db.query(
-      "INSERT INTO stores(name, address, contact_info, image, latitude, longitude, place_id) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id",
-      [
-        name,
-        address,
-        "Added from recommendations",
-        image,
-        location.lat,
-        location.lng,
-        place_id,
-      ]
-    );
-
-    const newStore = {
-      id: result.insertId,
-      name,
-      address,
-      image,
-    };
-
-    res.json({ success: true, store: newStore });
-  } catch (error) {
-    console.error("Database error:", error);
-    res.json({ success: false, error: "Failed to add store." });
-  }
-});
-
 // Delete a store
 app.post("/store/:id/delete", async (req, res) => {
   try {
