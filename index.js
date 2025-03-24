@@ -159,8 +159,14 @@ app.get("/store/:id", async (req, res) => {
 });
 
 app.post("/add-store", upload.single("image"), async (req, res) => {
-  const { name, address, contact_info, parking } = req.body;
-  const image = req.file.buffer;
+  const { name, address, contact_info } = req.body;
+  let imagePath = null;
+
+  // Check if an image file is uploaded
+  if (req.file) {
+    imagePath = req.file.buffer; // Get the image buffer
+  }
+
   const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
     address
   )}&key=${process.env.GOOGLE_MAPS_API_KEY}`;
@@ -173,9 +179,7 @@ app.post("/add-store", upload.single("image"), async (req, res) => {
     if (!location || !placeId) {
       return res
         .status(400)
-        .send(
-          "Unable to find coordinates or place ID for the provided address."
-        );
+        .send("Unable to find coordinates or place ID for the provided address.");
     }
 
     const latitude = location.lat;
@@ -185,17 +189,17 @@ app.post("/add-store", upload.single("image"), async (req, res) => {
     const { openingHours, closingHours } = await fetchPlaceDetails(placeId);
 
     // Insert into database
-const query =
-  "INSERT INTO stores(name, address, contact_info, latitude, longitude, place_id, opening_hours) VALUES($1, $2, $3, $4, $5, $6, $7)";
-const values = [
-  name,
-  address,
-  contact_info,
-  latitude,
-  longitude,
-  placeId,
-  openingHours,
-];
+    const query =
+      "INSERT INTO stores(name, address, contact_info, latitude, longitude, place_id, opening_hours) VALUES($1, $2, $3, $4, $5, $6, $7)";
+    const values = [
+      name,
+      address,
+      contact_info,
+      latitude,
+      longitude,
+      placeId,
+      openingHours,
+    ];
     await db.query(query, values);
 
     res.redirect("/");
