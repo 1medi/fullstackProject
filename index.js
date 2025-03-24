@@ -54,18 +54,6 @@ async function fetchPlaceDetails(placeId) {
   };
 }
 
-async function getPlaceIdFromDatabase(storeId) {
-  try {
-    const result = await db.query("SELECT place_id FROM stores WHERE id = $1", [
-      storeId,
-    ]);
-    return result.rows.length > 0 ? result.rows[0].place_id : null; // Return the Place ID or null if not found
-  } catch (error) {
-    console.error("Error fetching Place ID:", error);
-    return null; // Handle error gracefully
-  }
-}
-
 // Home Route
 app.get("/", async (req, res) => {
   try {
@@ -160,7 +148,6 @@ app.get("/store/:id", async (req, res) => {
 app.post("/add-store", upload.single("image"), async (req, res) => {
   const { name, address, contact_info } = req.body;
   console.log(req.body)
-  let imagePath = null;
 
   if (req.file) {
     imagePath = req.file.buffer;
