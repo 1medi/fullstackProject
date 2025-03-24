@@ -12,7 +12,7 @@
 
     <div class="container">
         <% if (store.image) { %>
-            <img class="banner" src="data:image/jpeg;base64,<%= store.image.toString('base64') %>" alt="Store Image">
+            <img class="banner" src="<%= store.image %>" alt="Store Image">
         <% } else { %>
             <img id="place-photo" alt="Store Photo" class="banner" src="<%= store.image %>">
         <% } %>
