@@ -33,6 +33,17 @@ function getRandomStores(stores, count) {
   return [...stores].sort(() => 0.5 - Math.random()).slice(0, count);
 }
 
+// Utility function to find store in recommended.json
+function findStoreInRecommended(storeId) {
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+  const allRecommendedStores = JSON.parse(
+    fs.readFileSync(path.join(__dirname, 'recommended.json'), 'utf8')
+  );
+  return allRecommendedStores.find(store => store.id === storeId);
+}
+
+
 // Helper function to fetch place details
 async function fetchPlaceDetails(placeId) {
   const placeDetailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&key=${process.env.GOOGLE_MAPS_API_KEY}`;
@@ -100,37 +111,50 @@ app.get("/stores", async (req, res) => {
 });
 
 // Fetch a single store
+// Fetch a single store (either from DB or recommended.json)
 app.get("/store/:id", async (req, res) => {
   const storeId = req.params.id;
-  const placeId = await getPlaceIdFromDatabase(storeId); // Fetch the Place ID based on the store ID
-  if (!placeId) {
-    return res.status(404).send('Store not found');
-  }
-  try {
-    const storeResult = await db.query("SELECT * FROM stores WHERE id = $1", [storeId]);
-    const reviewsResult = await db.query("SELECT * FROM reviews WHERE store_id = $1", [storeId]);
+  let store;
+  let placeId;
 
-    if (storeResult.rows.length === 0) {
+  try {
+    // Check if the store exists in the database
+    const dbResult = await db.query("SELECT * FROM stores WHERE id = $1", [storeId]);
+
+    if (dbResult.rows.length > 0) {
+      // Found in database
+      store = dbResult.rows[0];
+      placeId = store.place_id;
+    } else {
+      // Not in database, check recommended.json
+      const recommendedStore = findStoreInRecommended(storeId);
+      if (recommendedStore) {
+        store = recommendedStore;
+        placeId = recommendedStore.place_id;
+      }
+    }
+
+    // If store not found
+    if (!store || !placeId) {
       return res.status(404).send("Store not found");
     }
-    
-    const store = storeResult.rows[0];
-    console.log("Place ID:", store.place_id);
 
-    // Fetch place details to get opening and closing hours
-    const { openingHours } = await fetchPlaceDetails(store.place_id);
+    // Fetch place details from Google Places API
+    const { openingHours } = await fetchPlaceDetails(placeId);
 
-    const reviews = reviewsResult.rows;
-    console.log("Operating Hours:", openingHours); // Log the operating hours
-
-    res.render("store", { placeId: placeId, store, reviews, formattedOpeningHours: openingHours });
-    if (storeResult.rows.length === 0) return res.status(404).send("Store not found");
-
-    res.render("store", { store: storeResult.rows[0], reviews: reviewsResult.rows });
+    res.render("store", {
+      store,
+      placeId,
+      reviews: [], // No reviews for recommended stores
+      formattedOpeningHours: openingHours,
+    });
   } catch (err) {
+    console.error(err);
     res.status(500).send(err.message);
   }
 });
+
+
 app.post('/add-store', upload.single('image'), async (req, res) => {
   const { name, address, contact_info, parking } = req.body; 
   const image = req.file.buffer;
@@ -166,7 +190,10 @@ app.post('/add-store', upload.single('image'), async (req, res) => {
 
 // Add a recommended store
 app.post("/store/add", async (req, res) => {
-  const { name, address, image } = req.body;
+  const { name, address, image, place_id } = req.body; // Include place_id
+  console.log("Received store data:", { name, address, image, place_id }); // Log the received data
+  console.log("Request Body:", req.body); // Log the entire request body for debugging
+  console.log("Inserting into database with Place ID:", place_id); // Log the place_id being inserted
 
   try {
     const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${process.env.GOOGLE_MAPS_API_KEY}`;
@@ -174,9 +201,9 @@ app.post("/store/add", async (req, res) => {
     const location = geocodeResponse.data.results[0]?.geometry?.location;
     if (!location) return res.status(400).json({ success: false, message: "Could not geocode address" });
 
-    const result = await db.query(
-      "INSERT INTO stores(name, address, contact_info, image, latitude, longitude) VALUES($1, $2, $3, $4, $5, $6) RETURNING id",
-      [name, address, 'Added from recommendations', image, location.lat, location.lng]
+const result = await db.query(
+  "INSERT INTO stores(name, address, contact_info, image, latitude, longitude, place_id) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id",
+  [name, address, 'Added from recommendations', image, location.lat, location.lng, place_id]
     );
 
     res.json({ success: true, store: { id: result.rows[0].id, name, address, image } });
@@ -211,13 +238,19 @@ app.post('/add-review', upload.single('image'), async (req, res) => {
 });
 
 app.post("/store/add", async (req, res) => {
-  const { name, address, image } = req.body;
+  const { name, address, image, place_id } = req.body; // Include place_id
+  console.log("Received store data:", { name, address, image, place_id }); // Log the received data
+  console.log("Inserting into database with Place ID:", place_id); // Log the place_id being inserted
 
   try {
-    // Insert into the database
-    const [result] = await db.execute(
-      "INSERT INTO stores (name, address, image) VALUES (?, ?, ?)",
-      [name, address, image ? Buffer.from(image, "base64") : null]
+    const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${process.env.GOOGLE_MAPS_API_KEY}`;
+    const geocodeResponse = await axios.get(geocodeUrl);
+    const location = geocodeResponse.data.results[0]?.geometry?.location;
+    if (!location) return res.status(400).json({ success: false, message: "Could not geocode address" });
+
+    const result = await db.query(
+      "INSERT INTO stores(name, address, contact_info, image, latitude, longitude, place_id) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id",
+      [name, address, 'Added from recommendations', image, location.lat, location.lng, place_id]
     );
 
     const newStore = {

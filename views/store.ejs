@@ -24,8 +24,7 @@
       <% } %> -->
       <h1 class="center-align"><%= store.name %></h1>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr;">
-
+      <div style="display: grid; grid-template-columns: 1fr 1fr">
         <ul>
           <h2 class="storeSubhead">Operating Hours</h2>
           <% formattedOpeningHours.forEach(function(hour) { %>
@@ -38,34 +37,17 @@
             Can You Park Here?
             <p style="font-size: 16px"><%= store.parking ? 'Yes' : 'No' %></p>
           </h2>
-          
-          <p><strong>Address:</strong> <a href="https://www.google.com/maps/search/?api=1&query=<%= store.address %>" target="_blank"><%= store.address %></a></p>
 
-        <div class="row">
-            <h3>Add a Review</h3>
-            <div class="add-review-form">
-                <form action="/add-review" method="POST" class="col s12" >
-                    <div class="input-field col s6">
-                        <input type="text" id="reviewerName" name="reviewerName" required>
-                        <label for="reviewer_name">Name</label>
-                    </div>
-                    <div class="input-field col s6">
-                        <input type="text" id="comment" name="comment" required>
-                        <label for="comment">Review Text</label>
-                    </div>
-                    <div class="input-field col s6">
-                        <input type="number" id="rating" name="rating" min="1" max="5" required>
-                        <label for="rating">Rating (1-5)</label>
-                    </div>
-                    <!-- <div class="input-field col s6">
-                        <input type="file" id="image" name="image" accept="image/*" required>
-                    </div> -->
-                    <input type="hidden" name="storeId" value="<%= store.id %>"> 
-                    <button type="submit" class="btn">Add Review</button>
-                </form>
-            </div>
-
+          <p>
+            <strong>Address:</strong>
+            <a
+              href="https://www.google.com/maps/search/?api=1&query=<%= store.address %>"
+              target="_blank"
+              ><%= store.address %></a
+            >
+          </p>
         </div>
+
       </div>
       <h2>Reviews</h2>
       <ul class="collection">
@@ -109,8 +91,9 @@
             </div>
             <div class="input-field col s6">
               <textarea id="comment" name="comment" rows="20" cols="33">
-                Your comment here.
-              </textarea>
+                    Your comment here.
+                  </textarea
+              >
             </div>
 
             <div class="input-field col s6">
