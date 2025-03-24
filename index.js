@@ -146,11 +146,10 @@ app.get("/store/:id", async (req, res) => {
       return res.status(404).send("Store not found");
     }
 
-    // Render the store page with most recent reviews by default
     res.render("store", {
       store,
       reviews: reviewsResult.rows,
-      placeId, // Include placeId here
+      placeId,
     });
   } catch (error) {
     console.error(error);

@@ -19,16 +19,14 @@
 
         <h1 class="center-align"><%= store.name %></h1>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr">
-            <div>
-                <p>
-                    <strong>Address:</strong>
+            <div style="display: flex; justify-content: center; align-items: center;">
+                <p style="text-align: center;">
+                    <strong>Directions:</strong>
                     <a href="https://www.google.com/maps/search/?api=1&query=<%= store.address %>" target="_blank">
                         <%= store.address %>
                     </a>
                 </p>
             </div>
-        </div>
 
         <h2>Reviews</h2>
         <div class="row">
