@@ -52,7 +52,9 @@
 - Remove Button to delete row data from SQL table
 - dotenv file integration
 ### Deluka
-- Task
+- Added a button that filters reivews
+    - From most recent to highest stars
+- Added created_at table in SQL: stores timestamp of when review is created
 ### Kenny
 - Adding recommended stores section
 - Created recommended.json containing recommended store data
