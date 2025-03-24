@@ -269,26 +269,7 @@
       const name = this.getAttribute('data-name');
       const address = this.getAttribute('data-address');
       const image = this.getAttribute('data-image');
-      // Add your logic here to add the store to your database
       console.log(`Adding store: ${name}, ${address}, ${image}`);
-
-      // You could implement an AJAX call here if you want to add the store without page refresh
-      // For example:
-      /*
-      fetch('/add-recommended-store', {
-      method: 'POST',
-      headers: {
-      'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ name, address, image })
-      })
-      .then(response => response.json())
-      .then(data => {
-      if (data.success) {
-      alert('Store added successfully!');
-      }
-      });
-      */
       });
       });
       }
@@ -332,12 +313,12 @@
               const newStore = document.createElement("li");
               newStore.classList.add("collection-item");
               newStore.innerHTML = `
-<strong><a href="/store/${result.store.id}">${result.store.name}</a></strong>
-<p style="margin: 8px;">${result.store.address}</p>
-<form action="/store/${result.store.id}/delete" method="POST" style="display:inline;">
-<button type="submit" class="btn red">Remove</button>
-</form>
-`;
+                <strong><a href="/store/${result.store.id}">${result.store.name}</a></strong>
+                <p style="margin: 8px;">${result.store.address}</p>
+                <form action="/store/${result.store.id}/delete" method="POST" style="display:inline;">
+                <button type="submit" class="btn red">Remove</button>
+                </form>
+                `;
               collectionList.appendChild(newStore);
             } else {
               alert("Failed to add store.");

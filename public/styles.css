@@ -43,7 +43,10 @@ textarea {
   align-items: center;
   margin: auto;
   width: 100%;
+  padding-left: 120px;
+  padding-right: 120px;
   height: 400px;
+  border-radius: 30px;
 }
 nav{
   justify-content: space-around;
