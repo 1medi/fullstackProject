@@ -13,24 +13,67 @@
   <body onload="init()">
     <%- include('header') %>
 
-    <div class="container">
-      <img id="place-photo" alt="Store Photo" class="banner" 
-           src="<%= store.image %>">
-      <h1 class="center-align"><%= store.name %></h1>
+<div class="container">
+    <% if (store.image) { %>
+        <img class="banner" src="data:image/jpeg;base64,<%= store.image.toString('base64') %>" alt="Store Image">
+    <% } else { %>
+        <img id="place-photo" alt="Store Photo" class="banner" src="<%= store.image %>">
+    <% } %>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr">
+    <h1 class="center-align"><%= store.name %></h1>
 
+    <div style="display: grid; grid-template-columns: 1fr 1fr">
         <div>
-          <p>
-            <strong>Address:</strong>
-            <a
-              href="https://www.google.com/maps/search/?api=1&query=<%= store.address %>"
-              target="_blank"
-              ><%= store.address %></a
-            >
-          </p>
+            <p>
+                <strong>Address:</strong>
+                <a href="https://www.google.com/maps/search/?api=1&query=<%= store.address %>" target="_blank">
+                    <%= store.address %>
+                </a>
+            </p>
         </div>
+    </div>
 
+    <h2>Reviews</h2>
+    <div class="row">
+        <div class="input-field col s6">
+            <button id="sortReviews" class="btn waves-effect waves-light">
+                Sort by Rating (High to Low)
+            </button>
+        </div>
+    </div>
+
+    <ul id="reviewList" class="collection">
+        <% reviews.forEach(review => { %>
+            <li class="collection-item review-item" data-rating="<%= review.rating %>" data-created-at="<%= review.created_at %>">
+                <h3><%= review.reviewer_name %></h3>
+                <p>Rating: <%= review.rating %></p>
+                <p><%= review.comment %></p>
+            </li>
+        <% }); %>
+    </ul>
+
+    <div class="row">
+        <h3>Add a Review</h3>
+        <div class="add-review-form">
+            <form action="/add-review" method="POST" class="col s12">
+                <div class="input-field col s6">
+                    <input type="text" id="reviewerName" name="reviewerName" required>
+                    <label for="reviewerName">Name</label>
+                </div>
+                <div class="input-field col s6">
+                    <input type="text" id="comment" name="comment" required>
+                    <label for="comment">Review Text</label>
+                </div>
+                <div class="input-field col s6">
+                    <input type="number" id="rating" name="rating" min="1" max="5" required>
+                    <label for="rating">Rating (1-5)</label>
+                </div>
+                <input type="hidden" name="storeId" value="<%= store.id %>"> 
+                <button type="submit" class="btn">Add Review</button>
+            </form>
+        </div>
+    </div>
+</div>
       </div>
       <h2>Reviews</h2>
       <ul class="collection">
@@ -90,6 +133,51 @@
       </div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const sortButton = document.getElementById("sortReviews");
+        const reviewList = document.getElementById("reviewList");
+    
+        // Get all reviews as an array of DOM elements
+        let reviews = Array.from(reviewList.getElementsByClassName("review-item"));
+    
+        // Store initial order by most recent (default)
+        const originalOrder = [...reviews];
+    
+        // Flag to track whether sorted by rating
+        let sortedByRating = false;
+    
+        // Sort reviews by rating (High to Low)
+        sortButton.addEventListener("click", function () {
+          if (!sortedByRating) {
+            // Sort by rating (high to low)
+            reviews.sort((a, b) => {
+              const ratingA = parseInt(a.getAttribute("data-rating"));
+              const ratingB = parseInt(b.getAttribute("data-rating"));
+              return ratingB - ratingA;
+            });
+    
+            sortButton.innerText = "Sort by Most Recent";
+          } else {
+            // Revert to original order (most recent)
+            reviews = [...originalOrder];
+            sortButton.innerText = "Sort by Rating (High to Low)";
+          }
+    
+          // Clear and re-append sorted reviews
+          reviewList.innerHTML = "";
+          reviews.forEach((review) => {
+            reviewList.appendChild(review);
+          });
+    
+          // Toggle flag
+          sortedByRating = !sortedByRating;
+        });
+      });
+    </script>
+    
     <script
       src="https://maps.googleapis.com/maps/api/js?key=<%= process.env.GOOGLE_MAPS_API_KEY %>&libraries=places&callback=initMap"
       async
@@ -127,7 +215,5 @@ document.getElementById("fab").onclick = function () {
         }
       }
   </script>
-    <body>
-
   </body>
 </html>

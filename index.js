@@ -119,19 +119,23 @@ app.get("/stores", async (req, res) => {
   }
 });
 
-// Fetch a single store
 app.get("/store/:id", async (req, res) => {
   const storeId = req.params.id;
   let store;
   let placeId;
 
   try {
-    const dbResult = await db.query("SELECT * FROM stores WHERE id = $1", [
-      storeId,
-    ]);
+    // Get store details
+    const storeResult = await db.query("SELECT * FROM stores WHERE id = $1", [storeId]);
 
-    if (dbResult.rows.length > 0) {
-      store = dbResult.rows[0];
+    // Get reviews sorted by most recent (created_at DESC) by default
+    const reviewsResult = await db.query(
+      "SELECT * FROM reviews WHERE store_id = $1 ORDER BY created_at DESC",
+      [storeId]
+    );
+
+    if (storeResult.rows.length > 0) {
+      store = storeResult.rows[0];
       placeId = store.place_id;
     } else {
       const recommendedStore = findStoreInRecommended(storeId);
@@ -148,10 +152,10 @@ app.get("/store/:id", async (req, res) => {
     // Fetch place details from Google Places API
     const { openingHours } = await fetchPlaceDetails(placeId);
 
+    // Render the store page with most recent reviews by default
     res.render("store", {
       store,
-      placeId,
-      reviews: [], // No reviews for recommended stores
+      reviews: reviewsResult.rows,
       formattedOpeningHours: openingHours,
     });
   } catch (err) {
@@ -275,7 +279,7 @@ app.post("/add-review", upload.single("image"), async (req, res) => {
   }
 });
 
-// Delete a store
+
 app.post("/store/:id/delete", async (req, res) => {
   try {
     await db.query("DELETE FROM stores WHERE id = $1", [req.params.id]);
