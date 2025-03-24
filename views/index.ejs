@@ -110,13 +110,6 @@
             ><a href="/store/<%= store.id %>"><%= store.name %></a></strong
           >
           <p style="margin: 8px"><%= store.address %></p>
-          <% if (store.image) { %>
-          <img
-            class="thumbnail"
-            src="data:image/jpeg;base64,<%= store.image.toString('base64') %>"
-            alt="Store Image"
-          />
-          <% } %>
           <!-- Remove Button -->
           <form
             action="/store/<%= store.id %>/delete"
@@ -143,15 +136,15 @@
             <h3><%= store.name %></h3>
             <p><%= store.address %></p>
           </div>
-            <button
-              class="add-store-btn"
-              data-name="<%= store.name %>"
-              data-address="<%= store.address %>"
-              data-image="<%= store.image %>"
-              data-place-id="<%= store.place_id %>"
-            >
-              Add to My Stores
-            </button>
+          <button
+            class="add-store-btn"
+            data-name="<%= store.name %>"
+            data-address="<%= store.address %>"
+            data-image="<%= store.image %>"
+            data-place-id="<%= store.place_id %>"
+          >
+            Add to My Stores
+          </button>
         </div>
         <% }); %>
       </div>
