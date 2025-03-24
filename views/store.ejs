@@ -14,30 +14,13 @@
     <%- include('header') %>
 
     <div class="container">
-      <img id="place-photo" alt="Store Photo" class="banner" ">
-      <!-- <% if (store.image) { %>
-      <img
-        class="banner"
-        src="data:image/jpeg;base64,<%= store.image.toString('base64') %>"
-        alt="Store Image"
-      />
-      <% } %> -->
+      <img id="place-photo" alt="Store Photo" class="banner" 
+           src="<%= store.image %>">
       <h1 class="center-align"><%= store.name %></h1>
 
       <div style="display: grid; grid-template-columns: 1fr 1fr">
-        <ul>
-          <h2 class="storeSubhead">Operating Hours</h2>
-          <% formattedOpeningHours.forEach(function(hour) { %>
-          <li><%= hour %></li>
-          <% }); %>
-        </ul>
 
         <div>
-          <h2 class="storeSubhead">
-            Can You Park Here?
-            <p style="font-size: 16px"><%= store.parking ? 'Yes' : 'No' %></p>
-          </h2>
-
           <p>
             <strong>Address:</strong>
             <a
@@ -111,9 +94,11 @@
       src="https://maps.googleapis.com/maps/api/js?key=<%= process.env.GOOGLE_MAPS_API_KEY %>&libraries=places&callback=initMap"
       async
       defer
-    ></script>
-    <script>
-      document.getElementById("fab").onclick = function () {
+    >
+  </script>
+  <script>
+
+document.getElementById("fab").onclick = function () {
         const form = document.querySelector(".add-store-form");
         form.style.display = form.style.display === "block" ? "none" : "block";
       };
@@ -141,6 +126,8 @@
           console.log("No photos available for this place.");
         }
       }
-    </script>
+  </script>
+    <body>
+
   </body>
 </html>

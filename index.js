@@ -111,22 +111,18 @@ app.get("/stores", async (req, res) => {
 });
 
 // Fetch a single store
-// Fetch a single store (either from DB or recommended.json)
 app.get("/store/:id", async (req, res) => {
   const storeId = req.params.id;
   let store;
   let placeId;
 
   try {
-    // Check if the store exists in the database
     const dbResult = await db.query("SELECT * FROM stores WHERE id = $1", [storeId]);
 
     if (dbResult.rows.length > 0) {
-      // Found in database
       store = dbResult.rows[0];
       placeId = store.place_id;
     } else {
-      // Not in database, check recommended.json
       const recommendedStore = findStoreInRecommended(storeId);
       if (recommendedStore) {
         store = recommendedStore;
@@ -134,7 +130,6 @@ app.get("/store/:id", async (req, res) => {
       }
     }
 
-    // If store not found
     if (!store || !placeId) {
       return res.status(404).send("Store not found");
     }
