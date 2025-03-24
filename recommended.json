@@ -1,0 +1,56 @@
+[
+  {
+    "name": "Nimbus 9",
+    "address": "15380 102a Ave #101, Surrey, BC V3R 0B3",
+    "image": "/images/nimbus.jpg",
+    "place_id": "ChIJ__8_fxTXhVQRVY4aDTdz_7o"
+  },
+  {
+    "name": "Clouds ECB",
+    "address": "4381 Dawson St, Burnaby, BC V5C 4B4",
+    "image": "/images/cloudsecb.jpg",
+    "place_id": "ChIJ5aPcCi93hlQRJLX3ivzzzxQ"
+  },
+  {
+    "name": "Vape Street",
+    "address": "552 Clarke Rd #204, Coquitlam, BC V3J 0M4",
+    "image": "/images/vapestreet.png",
+    "place_id": "ChIJrVVf4Et4hlQRfXtmdY9O-GU"
+  },
+  {
+    "name": "Haze Smoke Shop",
+    "address": "10252 City Pkwy Unit#102, Surrey, BC V3T 4C2",
+    "image": "/images/haze.jpg",
+    "place_id": "ChIJ6dL7KtXZhVQRzJltEP6EQII"
+  },
+  {
+    "name": "Lucky-8 Vapes",
+    "address": "8040 Anderson Rd, Richmond, BC V6Y 1S4",
+    "image": "/images/lucky8.jpg",
+    "place_id": "ChIJhWyS6rUKhlQRQmnmwSMeE18"
+  },
+  {
+    "name": "VAPE VAULT",
+    "address": "2572 Granville St, Vancouver, BC V6H 3G8",
+    "image": "/images/vapevault.jpg",
+    "place_id": "ChIJi4EZesdzhlQR-XOfoLenz8A"
+  },
+  {
+    "name": "Alpha Vapes",
+    "address": "603 E Broadway, Vancouver, BC V5T 1X7",
+    "image": "/images/alphavapes.jpg",
+    "place_id": "ChIJ0YcRaVlxhlQRZIpGWrOqMMg"
+  },
+  {
+    "name": "Puff N Pass",
+    "address": "2451 Clearbrook Rd #103, Abbotsford, BC V2T 2Y1",
+    "image": "/images/puffnpass.jpg",
+    "place_id": "ChIJaxUZdE01hFQRyZ9kqHvXN_I"
+  },
+  {
+    "name": "Vapor Vault",
+    "address": "2464 W Railway St, Abbotsford, BC V2S 2E4",
+    "image": "/images/vaporvault.jpg",
+    "place_id": "ChIJYans8JxKhFQRq63RNp6m3_Q"
+  }
+]
